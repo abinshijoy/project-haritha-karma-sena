@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { prisma } from '../models/prisma.js';
 import { AppError } from '../utils/errors.js';
+import { pagination, enumFilter } from '../utils/query.js';
 
 const createWorkerSchema = z.object({
   userId: z.string().min(1),
@@ -14,10 +15,10 @@ const updateWorkerSchema = createWorkerSchema.partial().omit({ userId: true });
 
 export async function listWorkers(req, res, next) {
   try {
-    const take = Math.min(Number(req.query.limit) || 50, 100);
-    const skip = Math.max(Number(req.query.offset) || 0, 0);
+    const { take, skip } = pagination(req.query);
     const where = {};
-    if (req.query.status) where.status = String(req.query.status);
+    const status = enumFilter(req.query.status, ['ACTIVE', 'INACTIVE', 'SUSPENDED'], 'worker status');
+    if (status) where.status = status;
     if (req.query.assignedWard) where.assignedWard = String(req.query.assignedWard);
 
     const [workers, total] = await Promise.all([

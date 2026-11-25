@@ -3,57 +3,60 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Haritha Karma Sena — pay the Rs. 50 monthly membership fee online, download digital receipts and view payment history." />
-  <title>Haritha Karma Sena — Billing &amp; Payments</title>
+  <meta name="description" content="Haritha Karma Sena — one unified portal for membership billing, HKS field tools and Green Points rewards." />
+  <title>Haritha Karma Sena — Unified portal</title>
   <link rel="stylesheet" href="/styles.css" />
+  <script src="/shared.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body data-page="home">
-  <div class="announcement">Green mission · Transparent billing · Rs. 50 monthly membership fee</div>
-  <header class="site-header">
+  <div class="announcement no-print">One account · billing · HKS tools · Green Points · live sync</div>
+  <header class="site-header no-print">
     <div class="container nav">
       <a class="brand" href="/index.html">
         <span class="brand-mark">♻</span>
-        <span>Haritha Karma Sena<small>Billing &amp; payments</small></span>
+        <span>Haritha Karma Sena<small>United for a cleaner Kerala</small></span>
       </a>
       <nav class="nav-links">
         <a class="active" href="/index.html">Home</a>
         <a href="/pay.html">Pay now</a>
-        <a href="/history.html">Payment history</a>
-        <a href="/admin.html">Admin</a>
+        <a href="/history.html">History</a>
+        <a href="/admin.html">Admin / HKS</a>
         <a href="/rewards.html">Rewards</a>
+        <span data-session-slot></span>
       </nav>
     </div>
   </header>
 
   <main>
+    <div id="homeMsg" class="notice hidden"></div>
     <section class="hero">
       <div class="container hero-grid">
         <div>
           <div class="eyebrow">Haritha Karma Sena</div>
-          <h1>Membership fees,<br /><em>simple &amp; transparent.</em></h1>
+          <h1>One portal.<br /><em>Every green action.</em></h1>
           <p class="lead">
-            Pay your monthly Rs. 50 contribution in a few clicks. Choose Razorpay, UPI or cash —
-            every payment gets a digital receipt and a permanent history entry.
+            Pay your monthly ₹50 contribution, verify field collections and earn Green Points —
+            all from one sign-in. Every change updates billing, history and your rewards wallet instantly.
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="/pay.html">Pay monthly fee →</a>
-            <a class="btn btn-secondary" href="/history.html">View my payments</a>
+            <a class="btn btn-secondary" href="/rewards.html">Explore rewards</a>
           </div>
-          <p class="small muted" style="color:rgba(255,255,255,.6);margin-top:22px" id="dbStatus">Checking services…</p>
+          <p class="small" style="color:rgba(255,255,255,.65);margin-top:22px" id="dbStatus">Checking services…</p>
         </div>
         <div class="fee-card">
           <div class="eyebrow">Monthly contribution</div>
           <div class="amount">₹50</div>
           <p style="color:rgba(255,255,255,.78);margin:10px 0 0">per member · per billing month</p>
           <ul>
-            <li>Online payment through Razorpay</li>
-            <li>UPI with manual verification</li>
-            <li>Cash collected by a field worker</li>
-            <li>Instant digital receipt</li>
-            <li>Searchable payment history</li>
+            <li>Pay by UPI and submit your UTR</li>
+            <li>Admin verifies and issues a receipt</li>
+            <li>Field workers verify clean segregation</li>
+            <li>Every paid bill earns 50 Green Points</li>
+            <li>Rewards and history stay in sync</li>
           </ul>
-          <p class="small" style="margin:20px 0 0;color:var(--gold-soft)" id="gatewayStatus">Checking gateways…</p>
+          <p class="small" style="margin:20px 0 0;color:var(--coral-soft)" id="gatewayStatus">Checking services…</p>
         </div>
       </div>
     </section>
@@ -62,24 +65,33 @@
       <div class="container">
         <div class="section-head">
           <div class="eyebrow">How it works</div>
-          <h2>From bill to receipt in three steps</h2>
-          <p class="muted">Built for volunteers and members — minimal friction, clear records.</p>
+          <h2>One identity, four connected spaces</h2>
+          <p class="muted">The member portal, admin console, billing and rewards all read and write the same store.</p>
         </div>
-        <div class="grid grid-3">
+        <div class="grid grid-4">
           <div class="card">
-            <div class="step-number">01 · Admin</div>
-            <h3>Monthly bills are generated</h3>
-            <p class="muted">The admin generates a Rs. 50 invoice for every active member at the start of the month.</p>
+            <div class="step-number">01 · Sign in</div>
+            <div class="card-icon">◎</div>
+            <h3>One OTP login</h3>
+            <p class="muted">Use your phone number once. Members and HKS staff get the right tools automatically.</p>
           </div>
           <div class="card">
-            <div class="step-number">02 · Member</div>
-            <h3>Pay your preferred way</h3>
-            <p class="muted">Use Razorpay card/UPI checkout, pay directly through UPI and submit the UTR, or hand cash to a collector.</p>
+            <div class="step-number">02 · Pay</div>
+            <div class="card-icon">₹</div>
+            <h3>Bills &amp; payments</h3>
+            <p class="muted">See your unpaid invoice, pay by UPI and track verification in payment history.</p>
           </div>
           <div class="card">
-            <div class="step-number">03 · System</div>
-            <h3>Receipt &amp; history</h3>
-            <p class="muted">Completed payments receive a numbered, printable receipt and appear in the member's payment history.</p>
+            <div class="step-number">03 · Verify</div>
+            <div class="card-icon">✦</div>
+            <h3>HKS field console</h3>
+            <p class="muted">Staff generate bills, verify payments and log segregation for members.</p>
+          </div>
+          <div class="card">
+            <div class="step-number">04 · Earn</div>
+            <div class="card-icon">🌿</div>
+            <h3>Green Points</h3>
+            <p class="muted">Points from bills and segregation appear in your wallet and redeem vouchers.</p>
           </div>
         </div>
       </div>
@@ -88,24 +100,21 @@
     <section class="section section-tint">
       <div class="container">
         <div class="section-head">
-          <div class="eyebrow">Payment options</div>
-          <h2>One fee. Three ways to pay.</h2>
+          <div class="eyebrow">Live synchronisation</div>
+          <h2>Every action updates everywhere</h2>
         </div>
         <div class="grid grid-3">
           <div class="card">
-            <div class="card-icon">₹</div>
-            <h3>Razorpay</h3>
-            <p class="muted">Secure hosted checkout with cards, UPI and netbanking. Orders are created on the server and verified by signature.</p>
+            <h3>Payment → points</h3>
+            <p class="muted">When an admin verifies a UPI payment or records cash, the receipt is generated and 50 Green Points land in the member's wallet.</p>
           </div>
           <div class="card">
-            <div class="card-icon">↗</div>
-            <h3>Manual UPI</h3>
-            <p class="muted">Scan the generated QR, pay from any UPI app and enter the transaction reference. Admin verifies and issues the receipt.</p>
+            <h3>Collection → points</h3>
+            <p class="muted">A verified segregation entry awards 20 points and appears in both the HKS console and the member's history.</p>
           </div>
           <div class="card">
-            <div class="card-icon">✋</div>
-            <h3>Cash</h3>
-            <p class="muted">Field collectors record cash payments in the admin panel with the collector name and an optional reference.</p>
+            <h3>Redeem → coupon</h3>
+            <p class="muted">Spending points creates a unique coupon code instantly and reduces the wallet balance across all pages.</p>
           </div>
         </div>
       </div>
@@ -113,17 +122,20 @@
 
     <section class="section">
       <div class="container card center">
-        <h2>Ready to pay your monthly fee?</h2>
-        <p class="muted">Enter your registered phone number to see your latest invoice.</p>
-        <a class="btn btn-primary" href="/pay.html">Go to payment page →</a>
+        <h2>Ready to get started?</h2>
+        <p class="muted">Sign in with the demo account, or create your own member phone number at the sign-in dialog.</p>
+        <div class="hero-actions" style="justify-content:center">
+          <a class="btn btn-primary" href="/pay.html">Go to payment page →</a>
+          <button class="btn btn-secondary" data-hks-login type="button">Sign in</button>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
+  <footer class="site-footer no-print">
     <div class="container">
-      <span>© <span id="year">2026</span> Haritha Karma Sena. Billing &amp; payment gateway demo.</span>
-      <span>Razorpay · UPI · Cash · Postgres</span>
+      <span>© <span id="year">2026</span> Haritha Karma Sena · Unified member &amp; HKS portal</span>
+      <span>One login · one data store · live sync</span>
     </div>
   </footer>
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>

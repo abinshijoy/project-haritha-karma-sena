@@ -96,8 +96,6 @@ export async function verifyOtp(req, res, next) {
       user = await prisma.user.update({ where: { id: user.id }, data: { name: name.trim() } });
     }
 
-    await consumeOtpChallenge(challenge.id);
-
     const token = signToken(user);
     const tokenHash = hashToken(token);
     const decoded = jwt.decode(token);
@@ -112,6 +110,9 @@ export async function verifyOtp(req, res, next) {
         ipAddress: req.ip,
       },
     });
+
+    // Consume only after the session exists; a failed create can then be retried.
+    await consumeOtpChallenge(challenge.id);
 
     res.json({
       success: true,

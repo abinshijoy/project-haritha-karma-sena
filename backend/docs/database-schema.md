@@ -75,7 +75,8 @@ OTP verification records.
 | codeHash | String | Bcrypt hash of OTP |
 | purpose | `OtpPurpose` | `LOGIN`, `VERIFY_PHONE`, `RESET` (RESET reserved) |
 | status | `OtpStatus` | `PENDING`, `VERIFIED`, `EXPIRED`, `CONSUMED` |
-| expiresAt/verifiedAt/consumedAt | DateTime? | Lifecycle |
+| expiresAt | DateTime | Required expiry time |
+| verifiedAt/consumedAt | DateTime? | Optional lifecycle timestamps |
 | attempts/maxAttempts | Int | Brute-force protection |
 
 ## `AuthSession`

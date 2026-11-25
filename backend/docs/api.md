@@ -5,7 +5,7 @@ This document is for frontend developers and testers connecting to the backend.
 ## Base URL
 
 - Local: `http://localhost:3000`
-- All API routes are prefixed with `/api`
+- All API routes are prefixed with `/api` (the health check `GET /health` is the only exception)
 
 ## Authentication
 

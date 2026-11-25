@@ -18,6 +18,31 @@ export function validateEnv() {
   if (String(process.env.JWT_SECRET).length < 16) {
     console.warn('[WARN] JWT_SECRET is short. Use at least 32 random characters.');
   }
+
+  const numeric = {
+    PORT: process.env.PORT || 3000,
+    OTP_TTL_MINUTES: process.env.OTP_TTL_MINUTES || 10,
+    OTP_LENGTH: process.env.OTP_LENGTH || 6,
+    OTP_MAX_ATTEMPTS: process.env.OTP_MAX_ATTEMPTS || 5,
+    OTP_REQUEST_COOLDOWN_SECONDS: process.env.OTP_REQUEST_COOLDOWN_SECONDS || 60,
+    RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000,
+    RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX || 100,
+    AUTH_RATE_LIMIT_WINDOW_MS: process.env.AUTH_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000,
+    AUTH_RATE_LIMIT_MAX: process.env.AUTH_RATE_LIMIT_MAX || 20,
+  };
+  for (const [key, raw] of Object.entries(numeric)) {
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new Error(`${key} must be a positive number (received ${raw}).`);
+    }
+  }
+
+  const provider = process.env.OTP_PROVIDER || 'console';
+  if (provider !== 'console') {
+    throw new Error(
+      `OTP_PROVIDER "${provider}" is not implemented. Use "console" for this build or add a delivery provider.`
+    );
+  }
 }
 
 export const config = {

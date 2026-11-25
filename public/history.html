@@ -5,39 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Payment history — Haritha Karma Sena</title>
   <link rel="stylesheet" href="/styles.css" />
+  <script src="/shared.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
-<body data-page="history">
-  <div class="announcement">Monthly membership fee · Rs. 50</div>
-  <header class="site-header">
+<body data-page="history" data-auth="member">
+  <div class="announcement no-print">Your bills · receipts · Green Points, all in one view</div>
+  <header class="site-header no-print">
     <div class="container nav">
       <a class="brand" href="/index.html">
         <span class="brand-mark">♻</span>
-        <span>Haritha Karma Sena<small>Billing &amp; payments</small></span>
+        <span>Haritha Karma Sena<small>Payment history</small></span>
       </a>
       <nav class="nav-links">
         <a href="/index.html">Home</a>
         <a href="/pay.html">Pay now</a>
-        <a class="active" href="/history.html">Payment history</a>
-        <a href="/admin.html">Admin</a>
+        <a class="active" href="/history.html">History</a>
+        <a href="/admin.html">Admin / HKS</a>
         <a href="/rewards.html">Rewards</a>
+        <span data-session-slot></span>
       </nav>
     </div>
   </header>
 
-  <main>
-    <div class="container page-head">
-      <h1>Payment history</h1>
-      <p>Look up all your monthly bills, payment statuses and digital receipts.</p>
-    </div>
+  <main class="container">
+    <div data-auth-content>
+      <div class="page-head">
+        <h1>Payment history</h1>
+        <p>All your monthly bills, payment statuses, digital receipts and the points each payment earned.</p>
+      </div>
 
-    <div class="container">
       <div class="panel">
         <form id="historyForm">
           <div class="form-grid">
             <div class="full">
               <label for="historyPhone">Registered phone number</label>
-              <input id="historyPhone" type="tel" inputmode="numeric" placeholder="e.g. 9000000001" required />
+              <input id="historyPhone" type="tel" inputmode="numeric" placeholder="e.g. 9999999999" required />
             </div>
           </div>
           <div class="form-actions">
@@ -52,6 +54,7 @@
           <div class="stat"><div class="label">Total paid</div><div class="value" id="summaryPaid">—</div></div>
           <div class="stat"><div class="label">Unpaid bills</div><div class="value" id="summaryPending">—</div></div>
           <div class="stat"><div class="label">Total invoices</div><div class="value" id="summaryCount">—</div></div>
+          <div class="stat"><div class="label">Green Points</div><div class="value" id="summaryPoints">—</div></div>
           <div class="stat"><div class="label">Member</div><div class="value" style="font-size:1rem" id="historyMember">—</div></div>
         </div>
 
@@ -59,7 +62,7 @@
           <div class="panel-head">
             <div>
               <h2>Invoices &amp; receipts</h2>
-              <p class="muted small">Receipts appear once a payment is confirmed or verified.</p>
+              <p class="muted small">Receipts appear once a payment is confirmed or verified. Every paid bill adds 50 Green Points.</p>
             </div>
             <select id="statusFilter" style="width:auto;min-width:150px">
               <option value="">All statuses</option>
@@ -89,11 +92,12 @@
     </div>
   </main>
 
-  <footer class="site-footer">
+  <footer class="site-footer no-print">
     <div class="container">
-      <span>© Haritha Karma Sena · Billing &amp; payments</span>
+      <span>© <span id="year">2026</span> Haritha Karma Sena · Billing &amp; payments</span>
       <a href="/pay.html" style="color:inherit">Pay a bill →</a>
     </div>
   </footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

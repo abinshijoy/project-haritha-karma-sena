@@ -1,41 +1,26 @@
+/* Billing, history, admin/HKS console and receipt UI for the unified app. */
+
 'use strict';
 
 const page = document.body.dataset.page || 'home';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+const api = (path, options) => window.HKS.api(path, options);
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'July', 'August', 'September', 'October', 'November', 'December',
 ];
-
-async function api(path, options = {}) {
-  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-  const response = await fetch(path, { ...options, headers });
-  let data = {};
-  try {
-    data = await response.json();
-  } catch {
-    data = {};
-  }
-  if (!response.ok) {
-    const error = new Error(data.error || `Request failed (${response.status}).`);
-    error.status = response.status;
-    error.data = data;
-    throw error;
-  }
-  return data;
-}
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   })[char]);
 }
 
 function formatMoney(paise) {
   return new Intl.NumberFormat('en-IN', {
-    style: 'currency', currency: 'INR', minimumFractionDigits: 2
+    style: 'currency', currency: 'INR', minimumFractionDigits: 2,
   }).format(Number(paise || 0) / 100);
 }
 
@@ -47,14 +32,15 @@ function monthLabel(value) {
 
 function dateLabel(value) {
   if (!value) return '—';
-  return new Date(value).toLocaleDateString('en-IN', {
-    day: '2-digit', month: 'short', year: 'numeric'
-  });
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? String(value)
+    : date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function invoiceStatus(invoice) {
   if (invoice.status === 'paid') return 'paid';
-  const due = new Date(`${String(invoice.due_date).slice(0, 10)}T23:59:59`);
+  const due = new Date(`${String(invoice.due_date || '').slice(0, 10)}T23:59:59`);
   return due < new Date() ? 'overdue' : 'pending';
 }
 
@@ -73,22 +59,11 @@ function setMessage(element, text, type = 'info') {
   element.textContent = text;
 }
 
-function setBusy(button, busy, busyText = 'Working…', originalText) {
+function setBusy(button, busy, busyText = 'Working…') {
   if (!button) return;
+  if (!button.dataset.originalText) button.dataset.originalText = button.textContent.trim();
   button.disabled = busy;
-  button.dataset.originalText = button.dataset.originalText || button.textContent.trim();
-  button.textContent = busy ? busyText : originalText || button.dataset.originalText;
-}
-
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    if ($(`script[src="${src}"]`)) return resolve();
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = resolve;
-    script.onerror = () => reject(new Error('Could not load the Razorpay checkout script.'));
-    document.head.appendChild(script);
-  });
+  button.textContent = busy ? busyText : button.dataset.originalText;
 }
 
 function currentMonthInput() {
@@ -96,21 +71,21 @@ function currentMonthInput() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
+function signedInUser() {
+  return window.HKS && window.HKS.user;
+}
+
 // ---------------------------------------------------------------------------
 // Home
 // ---------------------------------------------------------------------------
 async function initHome() {
   try {
-    const data = await api('/api/health');
-    const dbEl = $('#dbStatus');
-    const payEl = $('#gatewayStatus');
-    if (dbEl) dbEl.textContent = data.ok ? 'Database connected' : 'Database unavailable';
-    if (payEl) {
-      payEl.textContent = data.razorpayConfigured
-        ? 'Razorpay enabled'
-        : 'UPI & cash enabled';
+    const [health, config] = await Promise.all([api('/api/health'), api('/api/config')]);
+    if ($('#dbStatus')) $('#dbStatus').textContent = `${health.db} · ${health.ok ? 'all systems ready' : 'checking…'}`;
+    if ($('#gatewayStatus')) {
+      $('#gatewayStatus').textContent = `UPI ID ${config.upiId} · demo OTP ${config.demoOtp}`;
     }
-  } catch {
+  } catch (_) {
     setMessage($('#homeMsg'), 'Server metadata could not be loaded.', 'error');
   }
 }
@@ -118,25 +93,23 @@ async function initHome() {
 // ---------------------------------------------------------------------------
 // Pay page
 // ---------------------------------------------------------------------------
-const payState = {
-  config: null,
-  invoices: [],
-  selected: null,
-  method: 'razorpay'
-};
+const payState = { config: null, invoices: [], selected: null, method: 'upi' };
 
 async function initPay() {
+  if (!signedInUser()) return;
   try {
     payState.config = await api('/api/config');
     $('#upiIdText').textContent = payState.config.upiId;
-    const razorpayTab = $('[data-method="razorpay"]');
-    if (!payState.config.razorpayConfigured) {
-      razorpayTab.disabled = true;
-      razorpayTab.title = 'Razorpay keys are not configured on this server.';
-      selectMethod('upi');
+    const phoneInput = $('#phoneInput');
+    if (phoneInput && signedInUser().role !== 'ADMIN') {
+      phoneInput.value = signedInUser().phone || '';
     }
-  } catch (err) {
-    setMessage($('#lookupMsg'), err.message, 'error');
+    const razorpayTab = $('[data-method="razorpay"]');
+    if (razorpayTab) razorpayTab.disabled = true;
+    selectMethod('upi');
+    if (phoneInput && phoneInput.value) $('#lookupForm').requestSubmit();
+  } catch (error) {
+    setMessage($('#lookupMsg'), error.message, 'error');
   }
 
   $('#lookupForm').addEventListener('submit', async (event) => {
@@ -148,26 +121,22 @@ async function initPay() {
     $('#payPanel').classList.add('hidden');
     $('#resultPanel').classList.add('hidden');
     try {
-      const data = await api(`/api/members/lookup?phone=${encodeURIComponent($('#phoneInput').value.trim())}`);
+      const data = await api(`/api/history?phone=${encodeURIComponent($('#phoneInput').value.trim())}`);
       payState.invoices = data.invoices.filter((invoice) => invoice.status !== 'paid');
-      $('#memberName').textContent = `${data.member.full_name} · ${data.member.phone}`;
+      $('#memberName').textContent = `${data.member.name} · ${data.member.phone}`;
       renderInvoiceOptions();
       $('#memberPanel').classList.remove('hidden');
       if (!payState.invoices.length) {
-        setMessage($('#lookupMsg'), 'No unpaid invoices found. Bills are usually generated at the start of each month.', 'info');
+        setMessage($('#lookupMsg'), 'No unpaid invoices found. Bills are generated at the start of each month.', 'info');
       }
-    } catch (err) {
-      setMessage($('#lookupMsg'), err.message, 'error');
+    } catch (error) {
+      setMessage($('#lookupMsg'), error.message, 'error');
     } finally {
       setBusy(button, false);
     }
   });
 
-  $$('[data-method]').forEach((tab) => {
-    tab.addEventListener('click', () => selectMethod(tab.dataset.method));
-  });
-
-  $('#payWithRazorpay').addEventListener('click', payWithRazorpay);
+  $$('[data-method]').forEach((tab) => tab.addEventListener('click', () => selectMethod(tab.dataset.method)));
   $('#upiForm').addEventListener('submit', submitUpiPayment);
 }
 
@@ -184,8 +153,7 @@ function renderInvoiceOptions() {
         <strong>${escapeHtml(invoice.invoice_no)} — ${formatMoney(invoice.amount_paise)}</strong>
         <span class="muted small">${monthLabel(invoice.billing_month)} · due ${dateLabel(invoice.due_date)} · ${statusBadge(invoiceStatus(invoice))}</span>
       </span>
-    </label>
-  `).join('');
+    </label>`).join('');
   $$('input[name="invoiceId"]', list).forEach((radio) => {
     radio.addEventListener('change', () => {
       payState.selected = payState.invoices.find((invoice) => invoice.id === radio.value);
@@ -204,16 +172,15 @@ function updatePayPanel() {
     <strong>${escapeHtml(invoice.invoice_no)}</strong> · ${monthLabel(invoice.billing_month)} ·
     <strong>${formatMoney(invoice.amount_paise)}</strong>`;
   $('#upiQr').src = `/api/payments/upi/qr?invoiceId=${encodeURIComponent(invoice.id)}`;
-  const upiParams = new URLSearchParams({
+  const params = new URLSearchParams({
     pa: payState.config?.upiId || '',
     pn: payState.config?.upiName || 'Haritha Karma Sena',
     am: (Number(invoice.amount_paise) / 100).toFixed(2),
     cu: payState.config?.currency || 'INR',
-    tn: `HKS monthly fee ${monthLabel(invoice.billing_month)}`
+    tn: `HKS monthly fee ${monthLabel(invoice.billing_month)}`,
   });
-  $('#upiLink').href = `upi://pay?${upiParams.toString()}`;
+  $('#upiLink').href = `upi://pay?${params.toString()}`;
   $('#resultPanel').classList.add('hidden');
-  setMessage($('#razorpayMsg'), '');
   setMessage($('#upiMsg'), '');
 }
 
@@ -225,103 +192,24 @@ function selectMethod(method) {
   $('#cashPane').classList.toggle('hidden', method !== 'cash');
 }
 
-async function payWithRazorpay() {
-  if (!payState.selected) return;
-  const button = $('#payWithRazorpay');
-  setBusy(button, true, 'Opening checkout…');
-  setMessage($('#razorpayMsg'), '');
-  try {
-    const order = await api('/api/payments/razorpay/order', {
-      method: 'POST',
-      body: JSON.stringify({ invoiceId: payState.selected.id })
-    });
-    await loadScript('https://checkout.razorpay.com/v1/checkout.js');
-    const checkout = new window.Razorpay({
-      key: order.keyId,
-      amount: order.amount,
-      currency: order.currency,
-      name: 'Haritha Karma Sena',
-      description: `Monthly fee · ${order.monthLabel}`,
-      order_id: order.orderId,
-      prefill: {
-        name: order.memberName,
-        contact: order.phone,
-        email: order.email || ''
-      },
-      notes: { invoice_no: order.invoiceNo },
-      theme: { color: '#17523f' },
-      handler: (response) => verifyRazorpay(order.orderId, response),
-      modal: {
-        ondismiss: async () => {
-          try {
-            await api('/api/payments/razorpay/fail', {
-              method: 'POST',
-              body: JSON.stringify({ orderId: order.orderId, reason: 'Checkout closed by user' })
-            });
-          } catch {
-            /* safe to ignore */
-          }
-        }
-      }
-    });
-    checkout.on('payment.failed', async (response) => {
-      try {
-        await api('/api/payments/razorpay/fail', {
-          method: 'POST',
-          body: JSON.stringify({
-            orderId: order.orderId,
-            reason: response.error?.description || 'Payment failed'
-          })
-        });
-      } catch {
-        /* safe to ignore */
-      }
-      setMessage($('#razorpayMsg'), response.error?.description || 'Payment failed. Please try again.', 'error');
-    });
-    checkout.open();
-  } catch (err) {
-    setMessage($('#razorpayMsg'), err.message, 'error');
-  } finally {
-    setBusy(button, false);
-  }
-}
-
-async function verifyRazorpay(orderId, response) {
-  try {
-    const result = await api('/api/payments/razorpay/verify', {
-      method: 'POST',
-      body: JSON.stringify({
-        orderId,
-        paymentId: response.razorpay_payment_id,
-        signature: response.razorpay_signature
-      })
-    });
-    showPaymentSuccess(result, 'Payment received. Your digital receipt is ready.');
-  } catch (err) {
-    setMessage($('#razorpayMsg'), `Payment verification failed: ${err.message}`, 'error');
-  }
-}
-
 async function submitUpiPayment(event) {
   event.preventDefault();
+  if (!payState.selected) return;
   const button = $('#submitUpi');
   setBusy(button, true, 'Submitting…');
   setMessage($('#upiMsg'), '');
   try {
     const result = await api('/api/payments/upi', {
       method: 'POST',
-      body: JSON.stringify({
-        invoiceId: payState.selected.id,
-        upiRef: $('#upiRef').value.trim()
-      })
+      body: JSON.stringify({ invoiceId: payState.selected.id, upiRef: $('#upiRef').value.trim() }),
     });
     showPaymentSuccess(
       result,
       'UPI reference submitted. An admin will verify it and issue your receipt shortly.'
     );
     $('#upiRef').value = '';
-  } catch (err) {
-    setMessage($('#upiMsg'), err.message, 'error');
+  } catch (error) {
+    setMessage($('#upiMsg'), error.message, 'error');
   } finally {
     setBusy(button, false);
   }
@@ -330,13 +218,13 @@ async function submitUpiPayment(event) {
 function showPaymentSuccess(result, message) {
   const panel = $('#resultPanel');
   panel.classList.remove('hidden');
-  if (result.receiptUrl) {
-    $('#resultMsg').innerHTML = `
-      <div class="notice success">${escapeHtml(message)}</div>
-      <p><a class="btn btn-primary" href="${escapeHtml(result.receiptUrl)}">View digital receipt · ${escapeHtml(result.receiptNo || '')}</a></p>`;
-  } else {
-    $('#resultMsg').innerHTML = `<div class="notice info">${escapeHtml(message)}</div>`;
-  }
+  const points = result.pointsAwarded
+    ? `<div class="notice success">🌿 +${result.pointsAwarded} Green Points added to your wallet.</div>`
+    : '';
+  $('#resultMsg').innerHTML = `
+    <div class="notice info">${escapeHtml(message)}</div>
+    ${points}
+    ${result.receiptUrl ? `<p><a class="btn btn-primary" href="${escapeHtml(result.receiptUrl)}">View digital receipt · ${escapeHtml(result.receiptNo || '')}</a></p>` : ''}`;
   panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -346,36 +234,47 @@ function showPaymentSuccess(result, message) {
 const historyState = { data: null };
 
 function initHistory() {
+  if (!signedInUser()) return;
+  const phoneInput = $('#historyPhone');
+  if (phoneInput && signedInUser().role !== 'ADMIN') phoneInput.value = signedInUser().phone || '';
+
   $('#historyForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const button = $('#historyBtn');
     setBusy(button, true, 'Searching…');
     setMessage($('#historyMsg'), '');
     try {
-      historyState.data = await api(
-        `/api/members/lookup?phone=${encodeURIComponent($('#historyPhone').value.trim())}`
-      );
+      historyState.data = await api(`/api/history?phone=${encodeURIComponent($('#historyPhone').value.trim())}`);
       $('#historyResults').classList.remove('hidden');
       renderHistory();
-    } catch (err) {
+    } catch (error) {
       $('#historyResults').classList.add('hidden');
-      setMessage($('#historyMsg'), err.message, 'error');
+      setMessage($('#historyMsg'), error.message, 'error');
     } finally {
       setBusy(button, false);
     }
   });
 
   $('#statusFilter').addEventListener('change', renderHistory);
+  if (phoneInput && phoneInput.value) $('#historyForm').requestSubmit();
 }
 
-function renderHistory() {
+async function renderHistory() {
   if (!historyState.data) return;
   const { member, invoices, summary } = historyState.data;
   const filter = $('#statusFilter').value;
-  $('#historyMember').textContent = `${member.full_name} · ${member.phone}${member.ward ? ` · ${member.ward}` : ''}`;
+  $('#historyMember').textContent = `${member.name} · ${member.phone}${member.ward ? ` · ${member.ward}` : ''}`;
   $('#summaryPaid').textContent = formatMoney(summary.totalPaidPaise);
   $('#summaryPending').textContent = String(summary.pendingCount);
   $('#summaryCount').textContent = String(summary.invoiceCount);
+  if ($('#summaryPoints')) {
+    try {
+      const wallet = await api('/api/rewards/summary');
+      $('#summaryPoints').textContent = String(wallet.balance);
+    } catch (_) {
+      $('#summaryPoints').textContent = String(summary.pointsBalance ?? 0);
+    }
+  }
 
   const visible = invoices.filter((invoice) => !filter || invoiceStatus(invoice) === filter);
   $('#historyRows').innerHTML = visible.length
@@ -383,12 +282,13 @@ function renderHistory() {
         const paidPayment = invoice.payments.find((payment) => payment.status === 'paid');
         const latest = invoice.payments[0];
         const method = paidPayment?.method || latest?.method || '—';
+        const points = paidPayment ? '<span class="mini-points">+50 pts</span>' : '';
         return `
           <tr>
             <td><strong>${escapeHtml(invoice.invoice_no)}</strong><br><span class="muted small">${monthLabel(invoice.billing_month)}</span></td>
             <td>${formatMoney(invoice.amount_paise)}</td>
             <td>${dateLabel(invoice.due_date)}</td>
-            <td>${statusBadge(invoiceStatus(invoice))}</td>
+            <td>${statusBadge(invoiceStatus(invoice))} ${points}</td>
             <td>${escapeHtml(method)}</td>
             <td>${paidPayment ? dateLabel(paidPayment.paid_at) : '—'}</td>
             <td>${paidPayment
@@ -400,52 +300,21 @@ function renderHistory() {
 }
 
 // ---------------------------------------------------------------------------
-// Admin
+// Admin / HKS console
 // ---------------------------------------------------------------------------
-const adminState = { token: '', data: null };
-
-async function adminApi(path, options = {}) {
-  return api(path, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${adminState.token}`,
-      ...(options.headers || {})
-    }
-  });
-}
+const adminState = { data: null };
 
 async function initAdmin() {
-  adminState.token = localStorage.getItem('hksAdminToken') || '';
-  if (adminState.token) await enterAdmin();
-
-  $('#adminLoginForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    adminState.token = $('#adminToken').value.trim();
-    try {
-      await adminApi('/api/admin/overview');
-      localStorage.setItem('hksAdminToken', adminState.token);
-      await enterAdmin();
-    } catch (err) {
-      setMessage($('#adminLoginMsg'), err.message, 'error');
-    }
-  });
-
-  $('#logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('hksAdminToken');
-    adminState.token = '';
-    $('#adminDashboard').classList.add('hidden');
-    $('#adminLogin').classList.remove('hidden');
-    $('#adminToken').value = '';
-  });
+  if (!signedInUser() || signedInUser().role !== 'ADMIN') return;
+  await refreshAdmin();
 
   $('#generateForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const button = $('#generateBtn');
     setBusy(button, true, 'Generating…');
     try {
-      const result = await adminApi('/api/admin/invoices/generate', {
-        method: 'POST',
-        body: JSON.stringify({ month: $('#generateMonth').value })
+      const result = await api('/api/admin/invoices/generate', {
+        method: 'POST', body: JSON.stringify({ month: $('#generateMonth').value }),
       });
       setMessage(
         $('#generateMsg'),
@@ -453,8 +322,8 @@ async function initAdmin() {
         'success'
       );
       await refreshAdmin();
-    } catch (err) {
-      setMessage($('#generateMsg'), err.message, 'error');
+    } catch (error) {
+      setMessage($('#generateMsg'), error.message, 'error');
     } finally {
       setBusy(button, false);
     }
@@ -465,20 +334,20 @@ async function initAdmin() {
     const button = $('#memberBtn');
     setBusy(button, true, 'Adding…');
     try {
-      await adminApi('/api/admin/members', {
+      await api('/api/admin/members', {
         method: 'POST',
         body: JSON.stringify({
           fullName: $('#memberName').value.trim(),
           phone: $('#memberPhone').value.trim(),
           email: $('#memberEmail').value.trim(),
-          ward: $('#memberWard').value.trim()
-        })
+          ward: $('#memberWard').value.trim(),
+        }),
       });
       $('#memberForm').reset();
-      setMessage($('#memberMsg'), 'Member added successfully.', 'success');
+      setMessage($('#memberMsg'), 'Member added and available for billing immediately.', 'success');
       await refreshAdmin();
-    } catch (err) {
-      setMessage($('#memberMsg'), err.message, 'error');
+    } catch (error) {
+      setMessage($('#memberMsg'), error.message, 'error');
     } finally {
       setBusy(button, false);
     }
@@ -490,20 +359,48 @@ async function initAdmin() {
     const button = $('#cashBtn');
     setBusy(button, true, 'Recording…');
     try {
-      const result = await adminApi('/api/payments/cash', {
+      const result = await api('/api/payments/cash', {
         method: 'POST',
         body: JSON.stringify({
           invoiceId: $('#cashInvoice').value,
           collectedBy: $('#cashCollector').value.trim(),
-          reference: $('#cashReference').value.trim()
-        })
+          reference: $('#cashReference').value.trim(),
+        }),
       });
-      setMessage($('#cashMsg'), `Cash payment recorded. Receipt: ${result.receiptNo}.`, 'success');
+      setMessage(
+        $('#cashMsg'),
+        `Cash payment recorded. Receipt: ${result.receiptNo}. ${result.pointsAwarded ? `+${result.pointsAwarded} Green Points credited.` : ''}`,
+        'success'
+      );
       $('#cashReference').value = '';
       await loadCashInvoices();
       await refreshAdmin();
-    } catch (err) {
-      setMessage($('#cashMsg'), err.message, 'error');
+    } catch (error) {
+      setMessage($('#cashMsg'), error.message, 'error');
+    } finally {
+      setBusy(button, false);
+    }
+  });
+
+  $('#segregationForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = $('#segregationBtn');
+    setBusy(button, true, 'Verifying…');
+    try {
+      const result = await api('/api/admin/collections/verify', {
+        method: 'POST',
+        body: JSON.stringify({
+          phone: $('#segregationPhone').value.trim(),
+          collectionReference: $('#segregationRef').value.trim(),
+          verifiedBy: signedInUser().name || 'HKS Worker',
+          ward: $('#segregationWard').value.trim(),
+        }),
+      });
+      setMessage($('#segregationMsg'), `Verified. +${result.pointsAwarded} Green Points credited to ${result.collection.memberName}.`, 'success');
+      $('#segregationRef').value = '';
+      await refreshAdmin();
+    } catch (error) {
+      setMessage($('#segregationMsg'), error.message, 'error');
     } finally {
       setBusy(button, false);
     }
@@ -511,47 +408,39 @@ async function initAdmin() {
 
   $('#paymentTable').addEventListener('click', handlePaymentAction);
   $('#pendingTable').addEventListener('click', handlePaymentAction);
-}
-
-async function enterAdmin() {
-  try {
-    await refreshAdmin();
-    $('#adminLogin').classList.add('hidden');
-    $('#adminDashboard').classList.remove('hidden');
-    $('#generateMonth').value = currentMonthInput();
-  } catch (err) {
-    localStorage.removeItem('hksAdminToken');
-    adminState.token = '';
-    $('#adminLogin').classList.remove('hidden');
-    setMessage($('#adminLoginMsg'), err.message, 'error');
-  }
+  $('#generateMonth').value = currentMonthInput();
 }
 
 async function refreshAdmin() {
-  const [overview, members, invoices, pending, payments] = await Promise.all([
-    adminApi('/api/admin/overview'),
-    adminApi('/api/admin/members'),
-    adminApi('/api/admin/invoices'),
-    adminApi('/api/admin/payments?status=pending'),
-    adminApi('/api/admin/payments')
+  const [overview, members, invoices, pending, payments, collections] = await Promise.all([
+    api('/api/admin/overview'),
+    api('/api/admin/members'),
+    api('/api/admin/invoices'),
+    api('/api/admin/payments?status=pending'),
+    api('/api/admin/payments'),
+    api('/api/admin/collections'),
   ]);
-  adminState.data = { overview: overview, members: members.members, invoices: invoices.invoices, pending: pending.payments, payments: payments.payments };
+  adminState.data = {
+    overview, members: members.members, invoices: invoices.invoices,
+    pending: pending.payments, payments: payments.payments, collections: collections.collections,
+  };
 
   $('#statMembers').textContent = String(overview.active_members);
   $('#statPendingInvoices').textContent = String(overview.pending_invoices);
   $('#statCollectedMonth').textContent = formatMoney(overview.collected_this_month_paise);
   $('#statPendingVerification').textContent = String(overview.pending_verifications);
   $('#statTotalCollected').textContent = formatMoney(overview.total_collected_paise);
+  if ($('#statRewardPoints')) $('#statRewardPoints').textContent = String(overview.total_green_points);
 
   $('#memberRows').innerHTML = adminState.data.members.length
     ? adminState.data.members.map((member) => `
         <tr>
-          <td><strong>${escapeHtml(member.full_name)}</strong></td>
+          <td><strong>${escapeHtml(member.name)}</strong></td>
           <td>${escapeHtml(member.phone)}</td>
           <td>${escapeHtml(member.email || '—')}</td>
           <td>${escapeHtml(member.ward || '—')}</td>
-          <td>${member.invoice_count} / ${member.paid_count}</td>
-          <td>${member.is_active ? 'Active' : 'Inactive'}</td>
+          <td>${escapeHtml(member.role)}</td>
+          <td>${member.isActive ? 'Active' : 'Inactive'}</td>
         </tr>`).join('')
     : '<tr><td colspan="6" class="muted center">No members yet.</td></tr>';
 
@@ -568,31 +457,43 @@ async function refreshAdmin() {
         </tr>`).join('')
     : '<tr><td colspan="7" class="muted center">No invoices yet.</td></tr>';
 
-  const renderPaymentRow = (payment, withActions) => `
+  const paymentRow = (payment, withActions) => `
     <tr>
       <td>${escapeHtml(payment.invoice_no)}</td>
       <td>${escapeHtml(payment.full_name)}<br><span class="muted small">${escapeHtml(payment.phone)}</span></td>
       <td>${escapeHtml(payment.method)}</td>
-      <td>${escapeHtml(payment.upi_ref || payment.razorpay_payment_id || payment.reference || '—')}</td>
+      <td>${escapeHtml(payment.upi_ref || payment.reference || payment.razorpay_payment_id || '—')}</td>
       <td>${statusBadge(payment.status)}</td>
       <td>${dateLabel(payment.paid_at || payment.created_at)}</td>
       <td>
         ${payment.receipt_no
           ? `<a href="/receipt.html?id=${encodeURIComponent(payment.id)}">Receipt</a>`
           : withActions
-            ? `<button class="btn btn-small btn-primary" data-verify="${escapeHtml(payment.id)}">Verify</button>
-               <button class="btn btn-small btn-danger" data-reject="${escapeHtml(payment.id)}">Reject</button>`
+            ? `<button class="btn btn-small btn-primary" data-verify="${escapeHtml(payment.id)}" type="button">Verify</button>
+               <button class="btn btn-small btn-danger" data-reject="${escapeHtml(payment.id)}" type="button">Reject</button>`
             : '—'}
       </td>
     </tr>`;
 
   $('#pendingRows').innerHTML = adminState.data.pending.length
-    ? adminState.data.pending.map((payment) => renderPaymentRow(payment, true)).join('')
+    ? adminState.data.pending.map((payment) => paymentRow(payment, true)).join('')
     : '<tr><td colspan="7" class="muted center">No payments awaiting verification.</td></tr>';
-
   $('#paymentRows').innerHTML = adminState.data.payments.length
-    ? adminState.data.payments.slice(0, 80).map((payment) => renderPaymentRow(payment, false)).join('')
+    ? adminState.data.payments.slice(0, 80).map((payment) => paymentRow(payment, false)).join('')
     : '<tr><td colspan="7" class="muted center">No payments recorded yet.</td></tr>';
+
+  $('#collectionRows').innerHTML = adminState.data.collections.length
+    ? adminState.data.collections.map((item) => `
+        <tr>
+          <td>${escapeHtml(item.memberName)}<br><span class="muted small">${escapeHtml(item.phone)}</span></td>
+          <td>${escapeHtml(item.collectionId)}</td>
+          <td>${escapeHtml(item.ward || '—')}</td>
+          <td>${escapeHtml(item.verifiedBy || '—')}</td>
+          <td>${statusBadge(item.status.toLowerCase())}</td>
+          <td>${dateLabel(item.createdAt)}</td>
+          <td><span class="mini-points">+20 pts</span></td>
+        </tr>`).join('')
+    : '<tr><td colspan="7" class="muted center">No verified collections yet.</td></tr>';
 }
 
 async function loadCashInvoices() {
@@ -604,13 +505,13 @@ async function loadCashInvoices() {
     return;
   }
   try {
-    const data = await api(`/api/members/lookup?phone=${encodeURIComponent(phone)}`);
+    const data = await api(`/api/history?phone=${encodeURIComponent(phone)}`);
     const unpaid = data.invoices.filter((invoice) => invoice.status !== 'paid');
     select.innerHTML = unpaid.length
       ? unpaid.map((invoice) => `<option value="${escapeHtml(invoice.id)}">${escapeHtml(invoice.invoice_no)} · ${monthLabel(invoice.billing_month)} · ${formatMoney(invoice.amount_paise)}</option>`).join('')
       : '<option value="">No unpaid invoices</option>';
-  } catch (err) {
-    select.innerHTML = `<option value="">${escapeHtml(err.message)}</option>`;
+  } catch (error) {
+    select.innerHTML = `<option value="">${escapeHtml(error.message)}</option>`;
   }
 }
 
@@ -618,23 +519,19 @@ async function handlePaymentAction(event) {
   const verifyId = event.target.closest('[data-verify]')?.dataset.verify;
   const rejectId = event.target.closest('[data-reject]')?.dataset.reject;
   if (!verifyId && !rejectId) return;
-
   try {
     if (verifyId) {
-      await adminApi(`/api/admin/payments/${verifyId}/verify`, {
-        method: 'POST',
-        body: JSON.stringify({ verifiedBy: 'admin' })
+      const result = await api(`/api/admin/payments/${verifyId}/verify`, {
+        method: 'POST', body: JSON.stringify({ verifiedBy: signedInUser().name || 'admin' }),
       });
+      window.alert(`Payment verified. Receipt ${result.payment.receiptNo} issued. ${result.pointsAwarded ? `+${result.pointsAwarded} Green Points credited.` : ''}`);
     } else {
       const reason = window.prompt('Reason for rejection:', 'UTR could not be matched') || 'Manual payment could not be verified.';
-      await adminApi(`/api/admin/payments/${rejectId}/reject`, {
-        method: 'POST',
-        body: JSON.stringify({ reason })
-      });
+      await api(`/api/admin/payments/${rejectId}/reject`, { method: 'POST', body: JSON.stringify({ reason }) });
     }
     await refreshAdmin();
-  } catch (err) {
-    window.alert(err.message);
+  } catch (error) {
+    window.alert(error.message);
   }
 }
 
@@ -651,25 +548,23 @@ async function initReceipt() {
     const receipt = await api(`/api/receipts/${encodeURIComponent(paymentId)}`);
     document.title = `Receipt ${receipt.receipt_no} — Haritha Karma Sena`;
     renderReceipt(receipt);
-  } catch (err) {
-    setMessage($('#receiptMsg'), err.message, 'error');
+  } catch (error) {
+    setMessage($('#receiptMsg'), error.message, 'error');
   }
   $('#printBtn').addEventListener('click', () => window.print());
 }
 
 function renderReceipt(receipt) {
   const methodLabel = {
-    razorpay: 'Razorpay (online)',
-    upi: 'UPI (manual verification)',
-    cash: 'Cash'
+    razorpay: 'Razorpay (online)', upi: 'UPI (manual verification)', cash: 'Cash',
   }[receipt.method] || receipt.method;
-
   const transaction = receipt.razorpay_payment_id || receipt.upi_ref || receipt.reference || '—';
   $('#receiptContent').innerHTML = `
     <div class="receipt-top">
       <div>
-        <h1>Haritha Karma Sena</h1>
-        <div class="muted">Monthly membership fee · Digital receipt</div>
+        <div class="eyebrow">Haritha Karma Sena</div>
+        <h1>Digital receipt</h1>
+        <div class="muted">Monthly membership fee · ${escapeHtml(receipt.monthLabel)}</div>
       </div>
       <div class="receipt-meta">
         <strong>${escapeHtml(receipt.receipt_no)}</strong><br>
@@ -677,11 +572,9 @@ function renderReceipt(receipt) {
         <span class="pill paid">Paid</span>
       </div>
     </div>
-
     <div class="muted small">Receipt for</div>
     <h3>${escapeHtml(receipt.full_name)}</h3>
     <div class="muted small">${escapeHtml(receipt.phone)}${receipt.email ? ` · ${escapeHtml(receipt.email)}` : ''}${receipt.ward ? ` · ${escapeHtml(receipt.ward)}` : ''}</div>
-
     <table class="receipt-table" style="margin-top:26px">
       <tr><td>Invoice number</td><td><strong>${escapeHtml(receipt.invoice_no)}</strong></td></tr>
       <tr><td>Billing period</td><td>${escapeHtml(receipt.monthLabel)}</td></tr>
@@ -692,13 +585,11 @@ function renderReceipt(receipt) {
       <tr><td>Amount paid</td><td><span class="receipt-amount">${escapeHtml(receipt.formattedAmount)}</span></td></tr>
       <tr><td>Amount in words</td><td>${escapeHtml(receipt.amountWords)}</td></tr>
     </table>
-
     <p class="notice success" style="margin-top:24px">Payment received in full. No further payment is due for this billing period.</p>
-
     <div class="receipt-footer">
       <div>
         <strong>This is a computer-generated receipt.</strong><br>
-        Verify online at ${escapeHtml(receipt.verificationUrl)}<br>
+        Verify online at ${escapeHtml(receipt.verificationUrl || window.location.href)}<br>
         Haritha Karma Sena · Waste management &amp; cleanliness mission
       </div>
       <img src="/api/receipts/${encodeURIComponent(receipt.id)}/qr" alt="Receipt verification QR code" />
@@ -706,12 +597,13 @@ function renderReceipt(receipt) {
 }
 
 // ---------------------------------------------------------------------------
-const initialisers = {
-  home: initHome,
-  pay: initPay,
-  history: initHistory,
-  admin: initAdmin,
-  receipt: initReceipt
-};
+const initialisers = { home: initHome, pay: initPay, history: initHistory, admin: initAdmin, receipt: initReceipt };
 
-if (initialisers[page]) initialisers[page]();
+document.addEventListener('DOMContentLoaded', () => {
+  window.HKS.ready().then(() => {
+    if (initialisers[page]) initialisers[page]();
+  });
+  window.addEventListener('hks:auth', () => {
+    if (page === 'admin' && signedInUser()?.role === 'ADMIN') refreshAdmin().catch(() => {});
+  });
+});

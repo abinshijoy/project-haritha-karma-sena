@@ -11,8 +11,10 @@ python server.py
 # UI: http://localhost:8000
 ```
 
-Seed vouchers are created automatically on startup. Data is stored in
-`data/rewards_data.json`.
+Seed vouchers are created automatically on startup. Green Points now live in the
+**shared store** `data/app_data.json` alongside users, bills and payments, so awards
+from billing/admin appear in the wallet immediately. `src/rewards_core.py` is kept
+as a compatibility wrapper around the canonical `src/hks_core.py`.
 
 ## Eco tiers
 
@@ -44,7 +46,9 @@ cannot be claimed twice.
 
 ## HTTP API
 
-Base URL: `http://localhost:8000`
+Base URL: `http://localhost:8000`. All endpoints require the shared OTP session
+(`Authorization: Bearer <token>`). `userId` is optional: omit it to use the signed-in
+member; admins may pass another member's id.
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |

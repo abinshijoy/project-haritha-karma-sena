@@ -1,228 +1,163 @@
-# Project Haritha Karma Sena - Backend
+# Haritha Karma Sena — unified portal
 
-Backend for **Project Haritha Karma Sena**, a college project for managing residents/users, HKS workers, bills, reward points, and OTP-based authentication.
+One website for members and HKS staff: OTP sign-in, monthly billing, payments,
+digital receipts, an HKS admin console and a Green Points rewards wallet. All of
+them share **one login and one data store**, so a payment verified by an admin
+instantly appears in the member's history and credits Green Points.
 
-## Tech Stack
+There are two ways to run the project:
 
-- **Node.js + Express** - API server
-- **PostgreSQL** - database
-- **Prisma** - ORM/schema/migrations
-- **JWT** - session tokens
-- **Zod** - request validation
-- **bcryptjs** - OTP hashing
-- **helmet + cors + express-rate-limit** - basic security
+| Mode | Requirements | Use for |
+| --- | --- | --- |
+| **Unified demo** (recommended for review) | Python 3.10+ only | Full website, all APIs, no installation |
+| **Production backend** | Node.js + PostgreSQL | Real Express/Prisma API reference |
 
-## Project Structure
+---
+
+## 1. Unified demo — run in one command
+
+```powershell
+python server.py
+```
+
+Open <http://localhost:8000>. No Node.js, npm or PostgreSQL needed.
+
+### Pages
+
+| Page | URL | Access |
+| --- | --- | --- |
+| Home / overview | `/index.html` | Public |
+| Pay monthly fee | `/pay.html` | Member sign-in |
+| Payment history | `/history.html` | Member sign-in |
+| Admin / HKS console | `/admin.html` | Admin sign-in |
+| Green Points wallet & store | `/rewards.html` | Member sign-in |
+| Digital receipt | `/receipt.html?id=…` | Link from history/admin |
+
+### Demo accounts
+
+| Role | Phone | OTP |
+| --- | --- | --- |
+| Member | `9999999999` | `123456` |
+| Admin / HKS | `9999999998` | `123456` |
+
+Any other phone number creates a new resident account at sign-in. The OTP is
+always shown on screen in demo mode. The role selector in the sign-in dialog
+controls which account type is used; the admin console refuses member tokens.
+
+### What stays in sync
+
+- `/api/auth/*` — OTP request/verify, current user, logout (shared session).
+- `/api/history` — the signed-in member's invoices, payments and receipt numbers.
+- `/api/payments/upi` — member submits a UTR; payment becomes `PENDING`.
+- `/api/payments/cash` — admin records cash; invoice is paid immediately.
+- `/api/admin/payments/{id}/verify` — admin verifies UPI, issues a receipt and
+  awards 50 Green Points.
+- `/api/admin/collections/verify` — field verification awards 20 Green Points.
+- `/api/rewards/*` — wallet, voucher store, redemption and coupon codes.
+- `data/app_data.json` — the single JSON store for users, sessions, invoices,
+  payments, collections, points, vouchers and coupons.
+
+### Try the full loop
+
+1. Sign in as the member (`9999999999` / `123456`).
+2. Open **Pay now**, choose the unpaid invoice and submit any UTR.
+3. Sign out, sign in as admin (`9999999998` / `123456`).
+4. In **Payments awaiting verification**, click **Verify**. A receipt link is
+   generated and 50 Green Points are credited.
+5. Sign back in as the member. **Payment history** shows the receipt, and
+   **Rewards** shows the new balance. Redeem a voucher to get a coupon code.
+
+### Tests and checks
+
+```powershell
+python -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+### Project layout (demo)
 
 ```text
 .
-â”œâ”€â”€ .github/                        # PR/issue templates, CI workflow
-â”œâ”€â”€ backend/
-â”‚   â”œâ”€â”€ docs/
-â”‚   â”‚   â”œâ”€â”€ api.md                  # Frontend-ready API documentation
-â”‚   â”‚   â”œâ”€â”€ database-schema.md      # Database model explanation
-â”‚   â”‚   â””â”€â”€ github-setup.md         # GitHub push/PR guide
-â”‚   â”œâ”€â”€ prisma/
-â”‚   â”‚   â”œâ”€â”€ schema.prisma           # Database schema
-â”‚   â”‚   â””â”€â”€ seed.js                 # Creates/ensures admin user
-â”‚   â”œâ”€â”€ src/
-â”‚   â”‚   â”œâ”€â”€ config/env.js           # Env loading/validation
-â”‚   â”‚   â”œâ”€â”€ controllers/            # Route handlers
-â”‚   â”‚   â”œâ”€â”€ middleware/             # Auth, error handling
-â”‚   â”‚   â”œâ”€â”€ models/prisma.js        # Prisma client
-â”‚   â”‚   â”œâ”€â”€ routes/                 # Express routes
-â”‚   â”‚   â”œâ”€â”€ services/otpService.js  # OTP create/verify/consume
-â”‚   â”‚   â”œâ”€â”€ utils/                  # Crypto/errors helpers
-â”‚   â”‚   â”œâ”€â”€ app.js                  # Express app
-â”‚   â”‚   â””â”€â”€ server.js               # Server startup
-â”‚   â”œâ”€â”€ .env.example
-â”‚   â””â”€â”€ package.json
-â””â”€â”€ README.md
+├── server.py                  # one HTTP server for pages + API
+├── src/
+│   ├── hks_core.py            # single source of truth: users, bills, points, …
+│   └── rewards_core.py        # compatibility layer for the original module
+├── public/
+│   ├── index.html             # home
+│   ├── pay.html               # billing / payments
+│   ├── history.html           # member payment history
+│   ├── admin.html             # HKS admin console
+│   ├── rewards.html           # Green Points wallet + store
+│   ├── receipt.html           # printable digital receipt
+│   ├── shared.js              # login, session and auth gate for every page
+│   ├── app.js                 # billing, admin, history, receipt logic
+│   ├── rewards-app.js         # wallet, vouchers, coupons
+│   ├── styles.css             # plum / violet / coral / teal theme
+│   └── rewards.css            # rewards-specific styling
+├── tests/test_rewards.py      # unit tests
+└── data/app_data.json         # created on first run; delete to reset the demo
 ```
 
-## Features Implemented
+---
 
-### Authentication (OTP Login)
-- `POST /api/auth/request-otp` - request OTP
-- `POST /api/auth/verify-otp` - verify OTP, issue JWT
-- `GET /api/auth/me` - current user
-- `POST /api/auth/logout` - revoke current session
+## 2. Production backend (Node.js + Express + PostgreSQL)
 
-Security: OTP hashed in DB, expiry, max attempts, request cooldown, JWT session stored/checked/revoked.
+The Express/Prisma code under `backend/` remains the production reference. It
+uses the same OTP login flow (request → verify → JWT session).
 
-### Users
-- Admin: list/create users
-- Admin or self: get/update user profile
-- Fields include name, phone, role, address/ward, active status
+### Prerequisites
 
-### HKS Workers
-- Admin: list/get/create/update workers
-- Worker linked to a `User` account via `userId`
-- Tracks employee code, status, assigned ward/area
+Install [Git](https://git-scm.com/download/win), [Node.js LTS](https://nodejs.org/)
+(24 recommended; 20 is deprecated on GitHub runners) and
+[PostgreSQL](https://www.postgresql.org/download/windows/). Create the database:
 
-### Bills
-- Admin: create/update bills
-- Admin or owner: list/get bills
-- Tracks billing period, amount due/paid, status, due/paid dates, assigned worker
-
-### Points
-- Admin: create point ledger entries
-- Admin or owner: list points, get balance
-- Balance is calculated by DB aggregate (accurate total)
-
-## Local Setup (Windows)
-
-## Prerequisites
-Install these first:
-1. **Git** - for version control
-2. **Node.js LTS (includes npm)** - runs backend
-3. **PostgreSQL** - database
-
-### Step-by-step installation
-
-#### 1. Install Git
-1. Go to https://git-scm.com/download/win
-2. Download the 64-bit installer.
-3. Run installer; default options are fine.
-4. Open **PowerShell** and check:
-   ```powershell
-   git --version
-   ```
-
-#### 2. Install Node.js (includes npm)
-1. Go to https://nodejs.org/
-2. Download the **LTS** version for Windows.
-3. Run installer (keep â€œAdd to PATHâ€ checked).
-4. Restart PowerShell and check:
-   ```powershell
-   node -v
-   npm -v
-   ```
-   Recommended: Node 20+.
-
-#### 3. Install PostgreSQL
-1. Go to https://www.postgresql.org/download/windows/
-2. Download installer from EDB.
-3. Install PostgreSQL, pgAdmin, and command line tools.
-4. During install, set a password for the `postgres` user (remember it).
-5. Keep default port `5432`.
-6. Verify with:
-   ```powershell
-   psql --version
-   ```
-   If `psql` is not recognized, add PostgreSQL `bin` folder to PATH (e.g. `C:\Program Files\PostgreSQL\16\bin`) or use pgAdmin.
-
-#### 4. Create database
-Using pgAdmin or psql:
 ```sql
 CREATE DATABASE haritha_karma_sena;
 ```
 
-## Run Backend Locally
+### Setup
 
-1. Open PowerShell in project folder.
-2. Go to backend:
-   ```powershell
-   cd backend
-   ```
-3. Create env file:
-   ```powershell
-   Copy-Item .env.example .env
-   ```
-4. Edit `.env` and set:
-   - `DATABASE_URL` with your PostgreSQL username/password
-   - `JWT_SECRET` to a long random string
-   - `SEED_ADMIN_PHONE` to your admin phone
-5. Install dependencies:
-   ```powershell
-   npm install
-   ```
-6. Generate Prisma client:
-   ```powershell
-   npm run prisma:generate
-   ```
-7. Run migration (creates tables):
-   ```powershell
-   npm run prisma:migrate -- --name init
-   ```
-8. Seed admin user:
-   ```powershell
-   npm run prisma:seed
-   ```
-9. Start server:
-   ```powershell
-   npm run dev
-   ```
-
-Server: `http://localhost:3000`  
-Health check: `http://localhost:3000/health`
-
-## Test OTP Login (Development)
-
-1. Request OTP:
-   ```http
-   POST /api/auth/request-otp
-   Content-Type: application/json
-
-   { "phone": "+919999999999", "purpose": "LOGIN" }
-   ```
-2. Check backend terminal for `[OTP][DEV] ... code=123456`.
-3. Verify OTP:
-   ```http
-   POST /api/auth/verify-otp
-   Content-Type: application/json
-
-   { "phone": "+919999999999", "code": "123456", "purpose": "LOGIN" }
-   ```
-4. Copy `data.token` and use:
-   ```http
-   Authorization: Bearer <token>
-   ```
-
-## API Documentation
-
-See [`backend/docs/api.md`](backend/docs/api.md) for endpoint details, request/response examples, auth flow, and frontend integration notes.
-
-## Database Schema
-
-See [`backend/docs/database-schema.md`](backend/docs/database-schema.md).
-
-## GitHub / PR Workflow
-
-See [`backend/docs/github-setup.md`](backend/docs/github-setup.md). Do not push secrets; `.env` is ignored.
-
-## Important Notes
-
-- **OTP provider is console in development**. Real SMS integration is required for production.
-- This backend has been **code-reviewed and improved**, but it **cannot be fully runtime-tested in this environment** because Node.js/npm/PostgreSQL are not installed here. After installing prerequisites, run the commands above and test endpoints with Postman/Thunder Client.
-- For production/real deployment: strong JWT secret, HTTPS, real SMS provider, stricter CORS, logging/monitoring, and proper migrations.
-## Member 5 - Rewards module
-
-The Green Points and voucher module lives in `rewards` paths so it does not overwrite the backend/frontend files:
-
-- `src/rewards_core.py` - core logic (models, points, vouchers, coupons)
-- `server.py` - stdlib HTTP API + demo UI server
-- `public/rewards.html`, `public/rewards-app.js`, `public/rewards.css` - rewards demo UI
-- `tests/test_rewards.py` - 7 unit tests
-- `REWARDS_INTEGRATION.md` - integration payloads for Member 4 and Member 6
-
-### Run the full website demo (no installation needed)
-
-```bash
-python server.py
-# http://localhost:8000          -> billing home
-# http://localhost:8000/rewards.html -> Green Points wallet + voucher store
+```powershell
+cd backend
+Copy-Item .env.example .env
+# edit .env: DATABASE_URL, JWT_SECRET, SEED_ADMIN_PHONE
+npm install
+npm run prisma:generate
+npm run prisma:migrate -- --name init
+npm run prisma:seed
+npm run dev
 ```
 
-`server.py` serves every page in `public/` and runs the real Rewards API. The
-billing/admin endpoints return clearly-labelled sample data in demo mode, so
-the whole site (home, pay, history, admin, receipts and rewards) can be tested
-without installing Node.js or PostgreSQL. Use phone `9999999999` on the
-payment/history pages and any non-empty admin token for the console.
+API: <http://localhost:3000> · Health: <http://localhost:3000/health>
 
-The Rewards page includes **Demo actions** buttons that award +50 points for a
-bill payment and +20 for verified segregation, so you can test the full
-earn → wallet → redeem → coupon flow without waiting for Member 4 or 6.
+`OTP_PROVIDER=console` prints the code to the backend terminal in development.
+Any other value is rejected at startup until a real SMS provider is added.
 
-For the production Node/Express + PostgreSQL stack, use the setup steps above
-and `npm start`.
+### OTP login example
+
+```http
+POST /api/auth/request-otp
+Content-Type: application/json
+
+{ "phone": "+919999999999", "purpose": "LOGIN" }
+```
+
+```http
+POST /api/auth/verify-otp
+Content-Type: application/json
+
+{ "phone": "+919999999999", "code": "123456", "purpose": "LOGIN" }
+```
+
+Send the returned token as `Authorization: Bearer <token>`.
+
+Detailed API docs: [`backend/docs/api.md`](backend/docs/api.md) ·
+Schema: [`backend/docs/database-schema.md`](backend/docs/database-schema.md)
+
+---
+
+## Notes
+
+- Do not commit `.env` or `data/app_data.json`; both are local state.
+- The demo uses a fixed OTP (`123456`, overridable with `HKS_DEMO_OTP`) and a
+  plain JSON store. Use the Node/Prisma stack for real deployments.
+- GitHub CI runs the Python unit tests and the backend syntax/lint check.
