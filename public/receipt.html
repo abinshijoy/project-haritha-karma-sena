@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital receipt — Haritha Karma Sena</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js" defer></script>
+</head>
+<body data-page="receipt">
+  <header class="site-header no-print">
+    <div class="container nav">
+      <a class="brand" href="/index.html">
+        <span class="brand-mark">♻</span>
+        <span>Haritha Karma Sena<small>Digital receipt</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="/index.html">Home</a>
+        <a href="/history.html">Payment history</a>
+        <button class="btn btn-primary btn-small" id="printBtn" type="button">Print / Save as PDF</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="receiptMsg" class="notice hidden"></div>
+    <div id="receiptContent"></div>
+    <p class="center muted small no-print" style="margin-bottom:40px">
+      Need another copy? <a href="/history.html">Look up your payment history</a>.
+    </p>
+  </main>
+</body>
+</html>

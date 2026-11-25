@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Haritha Karma Sena — pay the Rs. 50 monthly membership fee online, download digital receipts and view payment history." />
+  <title>Haritha Karma Sena — Billing &amp; Payments</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js" defer></script>
+</head>
+<body data-page="home">
+  <div class="announcement">Green mission · Transparent billing · Rs. 50 monthly membership fee</div>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="/index.html">
+        <span class="brand-mark">♻</span>
+        <span>Haritha Karma Sena<small>Billing &amp; payments</small></span>
+      </a>
+      <nav class="nav-links">
+        <a class="active" href="/index.html">Home</a>
+        <a href="/pay.html">Pay now</a>
+        <a href="/history.html">Payment history</a>
+        <a href="/admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">Haritha Karma Sena</div>
+          <h1>Membership fees,<br /><em>simple &amp; transparent.</em></h1>
+          <p class="lead">
+            Pay your monthly Rs. 50 contribution in a few clicks. Choose Razorpay, UPI or cash —
+            every payment gets a digital receipt and a permanent history entry.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/pay.html">Pay monthly fee →</a>
+            <a class="btn btn-secondary" href="/history.html">View my payments</a>
+          </div>
+          <p class="small muted" style="color:rgba(255,255,255,.6);margin-top:22px" id="dbStatus">Checking services…</p>
+        </div>
+        <div class="fee-card">
+          <div class="eyebrow">Monthly contribution</div>
+          <div class="amount">₹50</div>
+          <p style="color:rgba(255,255,255,.78);margin:10px 0 0">per member · per billing month</p>
+          <ul>
+            <li>Online payment through Razorpay</li>
+            <li>UPI with manual verification</li>
+            <li>Cash collected by a field worker</li>
+            <li>Instant digital receipt</li>
+            <li>Searchable payment history</li>
+          </ul>
+          <p class="small" style="margin:20px 0 0;color:var(--gold-soft)" id="gatewayStatus">Checking gateways…</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div class="eyebrow">How it works</div>
+          <h2>From bill to receipt in three steps</h2>
+          <p class="muted">Built for volunteers and members — minimal friction, clear records.</p>
+        </div>
+        <div class="grid grid-3">
+          <div class="card">
+            <div class="step-number">01 · Admin</div>
+            <h3>Monthly bills are generated</h3>
+            <p class="muted">The admin generates a Rs. 50 invoice for every active member at the start of the month.</p>
+          </div>
+          <div class="card">
+            <div class="step-number">02 · Member</div>
+            <h3>Pay your preferred way</h3>
+            <p class="muted">Use Razorpay card/UPI checkout, pay directly through UPI and submit the UTR, or hand cash to a collector.</p>
+          </div>
+          <div class="card">
+            <div class="step-number">03 · System</div>
+            <h3>Receipt &amp; history</h3>
+            <p class="muted">Completed payments receive a numbered, printable receipt and appear in the member's payment history.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-tint">
+      <div class="container">
+        <div class="section-head">
+          <div class="eyebrow">Payment options</div>
+          <h2>One fee. Three ways to pay.</h2>
+        </div>
+        <div class="grid grid-3">
+          <div class="card">
+            <div class="card-icon">₹</div>
+            <h3>Razorpay</h3>
+            <p class="muted">Secure hosted checkout with cards, UPI and netbanking. Orders are created on the server and verified by signature.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">↗</div>
+            <h3>Manual UPI</h3>
+            <p class="muted">Scan the generated QR, pay from any UPI app and enter the transaction reference. Admin verifies and issues the receipt.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">✋</div>
+            <h3>Cash</h3>
+            <p class="muted">Field collectors record cash payments in the admin panel with the collector name and an optional reference.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container card center">
+        <h2>Ready to pay your monthly fee?</h2>
+        <p class="muted">Enter your registered phone number to see your latest invoice.</p>
+        <a class="btn btn-primary" href="/pay.html">Go to payment page →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© <span id="year">2026</span> Haritha Karma Sena. Billing &amp; payment gateway demo.</span>
+      <span>Razorpay · UPI · Cash · Postgres</span>
+    </div>
+  </footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
