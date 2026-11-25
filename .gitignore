@@ -20,3 +20,8 @@ Thumbs.db
 # prisma
 backend/prisma/dev.db
 backend/prisma/dev.db-journal
+
+# Python (Member 5 rewards module)
+__pycache__/
+*.py[cod]
+data/

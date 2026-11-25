@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Haritha Karma Sena · Rewards</title>
+  <link rel="stylesheet" href="/rewards.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">🌿</span>
+      <span>Haritha Karma Sena</span>
+    </div>
+    <nav class="topnav" aria-label="Main navigation">
+      <a href="#wallet">Wallet</a>
+      <a href="#rewards" class="active">Rewards</a>
+    </nav>
+    <label class="user-picker">
+      <span>User ID</span>
+      <input id="userId" type="text" value="member-5" autocomplete="off">
+    </label>
+  </header>
+
+  <main>
+    <section id="wallet" class="view">
+      <div class="section-heading">
+        <h1>Green Points Wallet</h1>
+        <p>Your eco-impact, tracked.</p>
+      </div>
+
+      <div id="walletLoading" class="state-card">Loading your wallet…</div>
+
+      <div id="walletContent" hidden>
+        <article class="card summary-card">
+          <div class="summary-top">
+            <div>
+              <p class="eyebrow">Available balance</p>
+              <div class="balance"><span id="balance">0</span> <small>pts</small></div>
+            </div>
+            <span id="tierBadge" class="badge tier">Eco Starter</span>
+          </div>
+          <div class="progress-block">
+            <div class="progress-label">
+              <span id="progressFrom">Eco Starter</span>
+              <span id="progressTo">Green Guardian</span>
+            </div>
+            <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+            <p id="progressHint" class="hint"></p>
+          </div>
+        </article>
+
+        <article class="card">
+          <h2>How to Earn</h2>
+          <ul class="earn-list">
+            <li><span class="earn-icon">₹</span><div><strong>+50 pts</strong><span>for paying the ₹50 monthly HKS bill on time</span></div></li>
+            <li><span class="earn-icon">♻️</span><div><strong>+20 pts</strong><span>for clean waste segregation</span></div></li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <div class="card-title-row">
+            <h2>History</h2>
+            <div class="filters" role="group" aria-label="Filter transactions">
+              <button class="filter active" data-filter="ALL">All</button>
+              <button class="filter" data-filter="EARN">Earned</button>
+              <button class="filter" data-filter="REDEEM">Redeemed</button>
+            </div>
+          </div>
+          <div id="transactionList" class="list"></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="rewards" class="view">
+      <div class="section-heading">
+        <h1>Rewards Store</h1>
+        <p>Turn your green points into real benefits.</p>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="redeem" role="tab">Redeem Rewards</button>
+        <button class="tab" data-tab="coupons" role="tab">My Active Coupons</button>
+      </div>
+
+      <div id="storeLoading" class="state-card">Loading rewards…</div>
+
+      <div id="redeemPanel" class="tab-panel">
+        <div id="voucherGrid" class="grid"></div>
+      </div>
+
+      <div id="couponPanel" class="tab-panel" hidden>
+        <div id="couponList" class="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottombar" aria-label="Quick navigation">
+    <a href="#wallet"><span>🏠</span>Home</a>
+    <a href="#rewards" class="active"><span>🎁</span>Rewards</a>
+    <a href="#wallet"><span>📈</span>Wallet</a>
+  </nav>
+
+  <div id="modalBackdrop" class="modal-backdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button id="modalClose" class="modal-close" aria-label="Close">×</button>
+      <h2 id="modalTitle">Confirm redemption</h2>
+      <div id="modalBody"></div>
+      <div class="modal-actions">
+        <button id="modalCancel" class="btn ghost">Cancel</button>
+        <button id="modalConfirm" class="btn primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="/rewards-app.js"></script>
+</body>
+</html>
