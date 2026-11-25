@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pay monthly fee — Haritha Karma Sena</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js" defer></script>
+</head>
+<body data-page="pay">
+  <div class="announcement">Monthly membership fee · Rs. 50</div>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="/index.html">
+        <span class="brand-mark">♻</span>
+        <span>Haritha Karma Sena<small>Billing &amp; payments</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="/index.html">Home</a>
+        <a class="active" href="/pay.html">Pay now</a>
+        <a href="/history.html">Payment history</a>
+        <a href="/admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page-head">
+      <h1>Pay your monthly fee</h1>
+      <p>Enter the phone number registered with Haritha Karma Sena. We'll find your latest unpaid bill.</p>
+    </div>
+
+    <div class="container">
+      <div class="panel">
+        <form id="lookupForm">
+          <div class="form-grid">
+            <div class="full">
+              <label for="phoneInput">Registered phone number</label>
+              <input id="phoneInput" name="phone" type="tel" inputmode="numeric" placeholder="e.g. 9000000001" required autocomplete="tel" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="lookupBtn" type="submit">Find my bill</button>
+          </div>
+        </form>
+        <div id="lookupMsg" class="notice hidden"></div>
+      </div>
+
+      <div class="panel hidden" id="memberPanel">
+        <div class="panel-head">
+          <div>
+            <h2>Your unpaid invoices</h2>
+            <p class="muted small" id="memberName"></p>
+          </div>
+        </div>
+        <div id="invoiceList"></div>
+      </div>
+
+      <div class="panel hidden" id="payPanel">
+        <div class="panel-head">
+          <div>
+            <h2>Choose a payment method</h2>
+            <p class="muted small" id="invoiceSummary"></p>
+          </div>
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-method="razorpay" type="button">Razorpay</button>
+          <button class="tab" data-method="upi" type="button">Manual UPI</button>
+          <button class="tab" data-method="cash" type="button">Cash</button>
+        </div>
+
+        <div id="razorpayPane">
+          <p class="muted">Pay securely with card, UPI or netbanking. Your order is created on the server and verified before a receipt is issued.</p>
+          <button class="btn btn-primary" id="payWithRazorpay" type="button">Pay with Razorpay</button>
+          <div id="razorpayMsg" class="notice hidden"></div>
+        </div>
+
+        <div id="upiPane" class="hidden">
+          <div class="qr-box">
+            <img id="upiQr" alt="UPI payment QR code" />
+            <div>
+              <p><strong>Pay the invoice amount using any UPI app.</strong></p>
+              <p class="muted small">Scan the QR or open the payment link, then paste the UTR / transaction reference below.</p>
+              <p>UPI ID: <span class="upi-id" id="upiIdText">—</span></p>
+              <p><a id="upiLink" href="#">Open UPI app ↗</a></p>
+            </div>
+          </div>
+          <form id="upiForm" style="margin-top:22px">
+            <div class="form-grid">
+              <div class="full">
+                <label for="upiRef">UPI transaction reference / UTR</label>
+                <input id="upiRef" type="text" placeholder="e.g. 412345678901" required />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" id="submitUpi" type="submit">Submit for verification</button>
+            </div>
+          </form>
+          <div id="upiMsg" class="notice hidden"></div>
+        </div>
+
+        <div id="cashPane" class="hidden">
+          <p class="notice info">Cash payments are recorded by a Haritha Karma Sena collector or admin. Please hand the exact amount to a verified volunteer and ask for a receipt.</p>
+          <p class="muted small">Admins can record cash payments from the <a href="/admin.html">admin panel</a>.</p>
+        </div>
+
+        <div class="panel hidden" id="resultPanel" style="margin-top:22px;background:var(--cream)">
+          <div id="resultMsg"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© Haritha Karma Sena · Billing &amp; payments</span>
+      <a href="/history.html" style="color:inherit">View payment history →</a>
+    </div>
+  </footer>
+</body>
+</html>

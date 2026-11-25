@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment history — Haritha Karma Sena</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js" defer></script>
+</head>
+<body data-page="history">
+  <div class="announcement">Monthly membership fee · Rs. 50</div>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="/index.html">
+        <span class="brand-mark">♻</span>
+        <span>Haritha Karma Sena<small>Billing &amp; payments</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="/index.html">Home</a>
+        <a href="/pay.html">Pay now</a>
+        <a class="active" href="/history.html">Payment history</a>
+        <a href="/admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page-head">
+      <h1>Payment history</h1>
+      <p>Look up all your monthly bills, payment statuses and digital receipts.</p>
+    </div>
+
+    <div class="container">
+      <div class="panel">
+        <form id="historyForm">
+          <div class="form-grid">
+            <div class="full">
+              <label for="historyPhone">Registered phone number</label>
+              <input id="historyPhone" type="tel" inputmode="numeric" placeholder="e.g. 9000000001" required />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="historyBtn" type="submit">View history</button>
+          </div>
+        </form>
+        <div id="historyMsg" class="notice hidden"></div>
+      </div>
+
+      <div id="historyResults" class="hidden">
+        <div class="stats">
+          <div class="stat"><div class="label">Total paid</div><div class="value" id="summaryPaid">—</div></div>
+          <div class="stat"><div class="label">Unpaid bills</div><div class="value" id="summaryPending">—</div></div>
+          <div class="stat"><div class="label">Total invoices</div><div class="value" id="summaryCount">—</div></div>
+          <div class="stat"><div class="label">Member</div><div class="value" style="font-size:1rem" id="historyMember">—</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Invoices &amp; receipts</h2>
+              <p class="muted small">Receipts appear once a payment is confirmed or verified.</p>
+            </div>
+            <select id="statusFilter" style="width:auto;min-width:150px">
+              <option value="">All statuses</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Amount</th>
+                  <th>Due date</th>
+                  <th>Status</th>
+                  <th>Method</th>
+                  <th>Paid on</th>
+                  <th>Receipt</th>
+                </tr>
+              </thead>
+              <tbody id="historyRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© Haritha Karma Sena · Billing &amp; payments</span>
+      <a href="/pay.html" style="color:inherit">Pay a bill →</a>
+    </div>
+  </footer>
+</body>
+</html>

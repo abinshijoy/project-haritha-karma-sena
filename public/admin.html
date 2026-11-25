@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Haritha Karma Sena</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js" defer></script>
+</head>
+<body data-page="admin">
+  <div class="announcement">Admin console · Set ADMIN_TOKEN in .env</div>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="/index.html">
+        <span class="brand-mark">♻</span>
+        <span>Haritha Karma Sena<small>Admin console</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="/index.html">Home</a>
+        <a href="/pay.html">Pay now</a>
+        <a href="/history.html">Payment history</a>
+        <a class="active" href="/admin.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container page-head">
+      <h1>Admin console</h1>
+      <p>Generate monthly bills, verify manual payments, record cash collections and issue receipts.</p>
+    </div>
+
+    <div class="container">
+      <div class="panel" id="adminLogin">
+        <h2>Admin sign in</h2>
+        <p class="muted">Enter the token configured as <code>ADMIN_TOKEN</code> in your <code>.env</code> file.</p>
+        <form id="adminLoginForm">
+          <div class="form-grid">
+            <div class="full">
+              <label for="adminToken">Admin token</label>
+              <input id="adminToken" type="password" autocomplete="current-password" required />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">Unlock dashboard</button>
+          </div>
+        </form>
+        <div id="adminLoginMsg" class="notice hidden"></div>
+      </div>
+
+      <div id="adminDashboard" class="hidden">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+          <button class="btn btn-secondary btn-small" id="logoutBtn" type="button">Sign out</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="label">Active members</div><div class="value" id="statMembers">—</div></div>
+          <div class="stat"><div class="label">Unpaid invoices</div><div class="value" id="statPendingInvoices">—</div></div>
+          <div class="stat"><div class="label">Collected this month</div><div class="value" id="statCollectedMonth">—</div></div>
+          <div class="stat"><div class="label">Pending verification</div><div class="value" id="statPendingVerification">—</div></div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="panel">
+            <div class="panel-head"><div><h2>Generate monthly bills</h2><p class="muted small">Rs. 50 for every active member, once per month.</p></div></div>
+            <form id="generateForm">
+              <div class="form-grid">
+                <div>
+                  <label for="generateMonth">Billing month</label>
+                  <input id="generateMonth" type="month" required />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-primary" id="generateBtn" type="submit">Generate invoices</button>
+              </div>
+            </form>
+            <div id="generateMsg" class="notice hidden"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div><h2>Add a member</h2><p class="muted small">Members are billed automatically from the next generation run.</p></div></div>
+            <form id="memberForm">
+              <div class="form-grid">
+                <div><label for="memberName">Full name</label><input id="memberName" required /></div>
+                <div><label for="memberPhone">Phone</label><input id="memberPhone" inputmode="numeric" required /></div>
+                <div><label for="memberEmail">Email (optional)</label><input id="memberEmail" type="email" /></div>
+                <div><label for="memberWard">Ward / area (optional)</label><input id="memberWard" /></div>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-primary" id="memberBtn" type="submit">Add member</button>
+              </div>
+            </form>
+            <div id="memberMsg" class="notice hidden"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>Record cash payment</h2><p class="muted small">Creates a paid invoice entry and a digital receipt immediately.</p></div>
+            <div class="small muted">Total collected: <strong id="statTotalCollected">—</strong></div>
+          </div>
+          <form id="cashForm">
+            <div class="form-grid">
+              <div><label for="cashPhone">Member phone</label><input id="cashPhone" inputmode="numeric" placeholder="9000000001" required /></div>
+              <div><label for="cashInvoice">Unpaid invoice</label><select id="cashInvoice" required><option value="">Enter a phone number first</option></select></div>
+              <div><label for="cashCollector">Collected by</label><input id="cashCollector" placeholder="Volunteer name" required /></div>
+              <div><label for="cashReference">Reference (optional)</label><input id="cashReference" placeholder="Collection slip no." /></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" id="cashBtn" type="submit">Record &amp; generate receipt</button>
+            </div>
+          </form>
+          <div id="cashMsg" class="notice hidden"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h2>Payments awaiting verification</h2><p class="muted small">Manual UPI submissions appear here.</p></div>
+          </div>
+          <div class="table-wrap">
+            <table id="pendingTable">
+              <thead>
+                <tr><th>Invoice</th><th>Member</th><th>Method</th><th>UTR / Ref</th><th>Status</th><th>Submitted</th><th>Action</th></tr>
+              </thead>
+              <tbody id="pendingRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div><h2>Invoices</h2><p class="muted small">Most recent first.</p></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Invoice</th><th>Member</th><th>Month</th><th>Amount</th><th>Due</th><th>Status</th><th>Receipt</th></tr>
+              </thead>
+              <tbody id="invoiceRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div><h2>All payments</h2><p class="muted small">Razorpay, UPI and cash entries.</p></div></div>
+          <div class="table-wrap">
+            <table id="paymentTable">
+              <thead>
+                <tr><th>Invoice</th><th>Member</th><th>Method</th><th>Transaction</th><th>Status</th><th>Date</th><th>Receipt</th></tr>
+              </thead>
+              <tbody id="paymentRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div><h2>Members</h2><p class="muted small">Invoices / paid invoices per member.</p></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Phone</th><th>Email</th><th>Ward</th><th>Invoices / Paid</th><th>Status</th></tr>
+              </thead>
+              <tbody id="memberRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <span>© Haritha Karma Sena · Admin billing console</span>
+      <span>Keep ADMIN_TOKEN private</span>
+    </div>
+  </footer>
+</body>
+</html>

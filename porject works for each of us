@@ -1,0 +1,8 @@
+
+Member	Role	Core Responsibilities	GitHub Branch / Focus
+Member 1	Team Lead & Backend Architect	Set up the GitHub repo, manage pull requests, design the database schema (users, HKS workers, bills, points), and handle user authentication (OTP/Login).	main / dev + feature/auth-db
+Member 2	Frontend Lead & Web-to-App Wrapper	Build the responsive UI layout, navigation, and convert the finished web app into a mobile app (using Capacitor, PWA, or Cordova).	feature/ui-wrapper
+Member 3	Collection Schedule & Notifications	Build the calendar/schedule view showing exact waste collection dates, ward/panchayat filters, and push/SMS alerts for upcoming pickups.	feature/schedule-alerts
+Member 4	Billing & ₹50 Payment Gateway	Integrate Razorpay/UPI for the ₹50 monthly user fee, generate digital receipts/online bills, and build the payment history page.	feature/billing-payments
+Member 5	Credit Points & Voucher Store	Build the green-credit logic (awarding points after timely payment/segregation) and the rewards marketplace to redeem vouchers.	feature/rewards-system
+Member 6	HKS Worker / Admin Portal & QA	Create the dashboard for Haritha Karma Sena members/admins to mark waste as collected, verify payments, update pickup dates, and test bugs.	feature/admin-hks-portal

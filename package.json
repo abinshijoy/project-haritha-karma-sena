@@ -1,0 +1,23 @@
+{
+  "name": "haritha-karma-sena-billing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Haritha Karma Sena — monthly fee billing, Razorpay/UPI/cash payments, digital receipts and payment history",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "init-db": "node db/init.js",
+    "seed": "node db/seed.js",
+    "setup": "npm run init-db && npm run seed"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^5.3.0",
+    "pg": "^8.13.1",
+    "qrcode": "^1.5.4"
+  }
+}
