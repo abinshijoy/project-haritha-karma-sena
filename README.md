@@ -16,28 +16,28 @@ Backend for **Project Haritha Karma Sena**, a college project for managing resid
 
 ```text
 .
-├── .github/                        # PR/issue templates, CI workflow
-├── backend/
-│   ├── docs/
-│   │   ├── api.md                  # Frontend-ready API documentation
-│   │   ├── database-schema.md      # Database model explanation
-│   │   └── github-setup.md         # GitHub push/PR guide
-│   ├── prisma/
-│   │   ├── schema.prisma           # Database schema
-│   │   └── seed.js                 # Creates/ensures admin user
-│   ├── src/
-│   │   ├── config/env.js           # Env loading/validation
-│   │   ├── controllers/            # Route handlers
-│   │   ├── middleware/             # Auth, error handling
-│   │   ├── models/prisma.js        # Prisma client
-│   │   ├── routes/                 # Express routes
-│   │   ├── services/otpService.js  # OTP create/verify/consume
-│   │   ├── utils/                  # Crypto/errors helpers
-│   │   ├── app.js                  # Express app
-│   │   └── server.js               # Server startup
-│   ├── .env.example
-│   └── package.json
-└── README.md
+â”œâ”€â”€ .github/                        # PR/issue templates, CI workflow
+â”œâ”€â”€ backend/
+â”‚   â”œâ”€â”€ docs/
+â”‚   â”‚   â”œâ”€â”€ api.md                  # Frontend-ready API documentation
+â”‚   â”‚   â”œâ”€â”€ database-schema.md      # Database model explanation
+â”‚   â”‚   â””â”€â”€ github-setup.md         # GitHub push/PR guide
+â”‚   â”œâ”€â”€ prisma/
+â”‚   â”‚   â”œâ”€â”€ schema.prisma           # Database schema
+â”‚   â”‚   â””â”€â”€ seed.js                 # Creates/ensures admin user
+â”‚   â”œâ”€â”€ src/
+â”‚   â”‚   â”œâ”€â”€ config/env.js           # Env loading/validation
+â”‚   â”‚   â”œâ”€â”€ controllers/            # Route handlers
+â”‚   â”‚   â”œâ”€â”€ middleware/             # Auth, error handling
+â”‚   â”‚   â”œâ”€â”€ models/prisma.js        # Prisma client
+â”‚   â”‚   â”œâ”€â”€ routes/                 # Express routes
+â”‚   â”‚   â”œâ”€â”€ services/otpService.js  # OTP create/verify/consume
+â”‚   â”‚   â”œâ”€â”€ utils/                  # Crypto/errors helpers
+â”‚   â”‚   â”œâ”€â”€ app.js                  # Express app
+â”‚   â”‚   â””â”€â”€ server.js               # Server startup
+â”‚   â”œâ”€â”€ .env.example
+â”‚   â””â”€â”€ package.json
+â””â”€â”€ README.md
 ```
 
 ## Features Implemented
@@ -92,7 +92,7 @@ Install these first:
 #### 2. Install Node.js (includes npm)
 1. Go to https://nodejs.org/
 2. Download the **LTS** version for Windows.
-3. Run installer (keep “Add to PATH” checked).
+3. Run installer (keep â€œAdd to PATHâ€ checked).
 4. Restart PowerShell and check:
    ```powershell
    node -v
@@ -196,3 +196,14 @@ See [`backend/docs/github-setup.md`](backend/docs/github-setup.md). Do not push 
 - **OTP provider is console in development**. Real SMS integration is required for production.
 - This backend has been **code-reviewed and improved**, but it **cannot be fully runtime-tested in this environment** because Node.js/npm/PostgreSQL are not installed here. After installing prerequisites, run the commands above and test endpoints with Postman/Thunder Client.
 - For production/real deployment: strong JWT secret, HTTPS, real SMS provider, stricter CORS, logging/monitoring, and proper migrations.
+## Member 5 - Rewards module
+
+The Green Points and voucher module lives in `rewards` paths so it does not overwrite the backend/frontend files:
+
+- `src/rewards_core.py` - core logic (models, points, vouchers, coupons)
+- `server.py` - stdlib HTTP API + demo UI server
+- `public/rewards.html`, `public/rewards-app.js`, `public/rewards.css` - rewards demo UI
+- `tests/test_rewards.py` - 7 unit tests
+- `REWARDS_INTEGRATION.md` - integration payloads for Member 4 and Member 6
+
+Run the demo with `python server.py` then open `http://localhost:8000/rewards.html`.
