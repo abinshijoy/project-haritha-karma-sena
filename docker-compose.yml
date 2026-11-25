@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hks-billing-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hks_billing
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - hks_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hks_billing"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  hks_pgdata:
