@@ -138,6 +138,10 @@ main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
 
 .state-card { padding: 30px; text-align: center; color: var(--muted); border: 1px dashed var(--border); border-radius: 14px; }
 
+.demo-card { border-style: dashed; background: #fbfefc; }
+.demo-note { margin: 0 0 12px; color: var(--muted); font-size: 0.88rem; }
+.demo-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
 .coupon-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 800; letter-spacing: 0.08em; color: var(--green-900); }
 .coupon-meta { color: var(--muted); font-size: 0.82rem; }
 

@@ -244,7 +244,11 @@ function closeModal() {
 }
 
 async function confirmRedeem() {
-  if (!pendingRedemption) return;
+  if (!pendingRedemption) {
+    closeModal();
+    $("#modalConfirm").textContent = "Confirm";
+    return;
+  }
   const button = $("#modalConfirm");
   button.disabled = true;
   button.textContent = "Redeeming…";
@@ -281,6 +285,39 @@ $$(".filter").forEach((button) => {
 
 $$(".tab").forEach((button) => {
   button.addEventListener("click", () => showTab(button.dataset.tab));
+});
+
+async function demoAward(button, endpoint, payload, successMessage) {
+  button.disabled = true;
+  try {
+    await api(endpoint, { method: "POST", body: JSON.stringify(payload) });
+    toast(successMessage);
+    await Promise.all([loadWallet(), loadStore()]);
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+$("#demoPayment").addEventListener("click", (event) => {
+  const reference = `DEMO-BILL-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  demoAward(
+    event.currentTarget,
+    "/api/rewards/award-payment",
+    { userId: getUserId(), billId: reference, amount: 50 },
+    "+50 Green Points awarded for the demo bill payment."
+  );
+});
+
+$("#demoSegregation").addEventListener("click", (event) => {
+  const reference = `DEMO-COLLECTION-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  demoAward(
+    event.currentTarget,
+    "/api/rewards/award-segregation",
+    { userId: getUserId(), collectionId: reference, verified: true },
+    "+20 Green Points awarded for verified segregation."
+  );
 });
 
 $("#modalClose").addEventListener("click", closeModal);

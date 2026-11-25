@@ -206,4 +206,23 @@ The Green Points and voucher module lives in `rewards` paths so it does not over
 - `tests/test_rewards.py` - 7 unit tests
 - `REWARDS_INTEGRATION.md` - integration payloads for Member 4 and Member 6
 
-Run the demo with `python server.py` then open `http://localhost:8000/rewards.html`.
+### Run the full website demo (no installation needed)
+
+```bash
+python server.py
+# http://localhost:8000          -> billing home
+# http://localhost:8000/rewards.html -> Green Points wallet + voucher store
+```
+
+`server.py` serves every page in `public/` and runs the real Rewards API. The
+billing/admin endpoints return clearly-labelled sample data in demo mode, so
+the whole site (home, pay, history, admin, receipts and rewards) can be tested
+without installing Node.js or PostgreSQL. Use phone `9999999999` on the
+payment/history pages and any non-empty admin token for the console.
+
+The Rewards page includes **Demo actions** buttons that award +50 points for a
+bill payment and +20 for verified segregation, so you can test the full
+earn → wallet → redeem → coupon flow without waiting for Member 4 or 6.
+
+For the production Node/Express + PostgreSQL stack, use the setup steps above
+and `npm start`.
