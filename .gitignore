@@ -1,4 +1,22 @@
+# dependencies
 node_modules/
+
+# env
 .env
-*.log
+.env.*
+!.env.example
+
+# build/output
+dist/
+build/
+coverage/
+
+# OS/editor
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# prisma
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
