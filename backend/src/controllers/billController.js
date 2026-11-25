@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { prisma } from '../models/prisma.js';
 import { AppError } from '../utils/errors.js';
+import { pagination, enumFilter } from '../utils/query.js';
 
 const createBillSchema = z.object({
   userId: z.string().min(1),
@@ -30,10 +31,10 @@ function billInclude() {
 
 export async function listBills(req, res, next) {
   try {
-    const take = Math.min(Number(req.query.limit) || 50, 100);
-    const skip = Math.max(Number(req.query.offset) || 0, 0);
+    const { take, skip } = pagination(req.query);
     const where = req.user.role === 'ADMIN' ? {} : { userId: req.user.id };
-    if (req.query.status) where.status = String(req.query.status);
+    const status = enumFilter(req.query.status, ['PENDING', 'PAID', 'OVERDUE', 'CANCELLED'], 'bill status');
+    if (status) where.status = status;
     if (req.query.userId && req.user.role === 'ADMIN') where.userId = String(req.query.userId);
 
     const [bills, total] = await Promise.all([

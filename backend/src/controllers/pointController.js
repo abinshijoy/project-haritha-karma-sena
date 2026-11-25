@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { prisma } from '../models/prisma.js';
 import { AppError } from '../utils/errors.js';
+import { pagination, enumFilter } from '../utils/query.js';
 
 const createPointSchema = z.object({
   userId: z.string().min(1),
@@ -12,11 +13,15 @@ const createPointSchema = z.object({
 
 export async function listPoints(req, res, next) {
   try {
-    const take = Math.min(Number(req.query.limit) || 50, 100);
-    const skip = Math.max(Number(req.query.offset) || 0, 0);
+    const { take, skip } = pagination(req.query);
     const where = req.user.role === 'ADMIN' ? {} : { userId: req.user.id };
     if (req.query.userId && req.user.role === 'ADMIN') where.userId = String(req.query.userId);
-    if (req.query.reason) where.reason = String(req.query.reason);
+    const reason = enumFilter(
+      req.query.reason,
+      ['BILL_PAYMENT', 'WASTE_SEGREGATION', 'SPECIAL_CAMPAIGN', 'ADJUSTMENT'],
+      'point reason'
+    );
+    if (reason) where.reason = reason;
 
     const [entries, count, aggregate] = await Promise.all([
       prisma.pointLedger.findMany({ where, orderBy: { createdAt: 'desc' }, take, skip }),

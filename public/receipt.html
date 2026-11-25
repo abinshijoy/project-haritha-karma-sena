@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Digital receipt — Haritha Karma Sena</title>
   <link rel="stylesheet" href="/styles.css" />
+  <script src="/shared.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body data-page="receipt">
@@ -16,8 +17,9 @@
       </a>
       <nav class="nav-links">
         <a href="/index.html">Home</a>
-        <a href="/history.html">Payment history</a>
+        <a href="/history.html">History</a>
         <a href="/rewards.html">Rewards</a>
+        <span data-session-slot></span>
         <button class="btn btn-primary btn-small" id="printBtn" type="button">Print / Save as PDF</button>
       </nav>
     </div>

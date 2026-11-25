@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pay monthly fee — Haritha Karma Sena</title>
   <link rel="stylesheet" href="/styles.css" />
+  <script src="/shared.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
-<body data-page="pay">
-  <div class="announcement">Monthly membership fee · Rs. 50</div>
-  <header class="site-header">
+<body data-page="pay" data-auth="member">
+  <div class="announcement no-print">Secure billing · ₹50 monthly membership fee · instant receipts</div>
+  <header class="site-header no-print">
     <div class="container nav">
       <a class="brand" href="/index.html">
         <span class="brand-mark">♻</span>
@@ -18,26 +19,27 @@
       <nav class="nav-links">
         <a href="/index.html">Home</a>
         <a class="active" href="/pay.html">Pay now</a>
-        <a href="/history.html">Payment history</a>
-        <a href="/admin.html">Admin</a>
+        <a href="/history.html">History</a>
+        <a href="/admin.html">Admin / HKS</a>
         <a href="/rewards.html">Rewards</a>
+        <span data-session-slot></span>
       </nav>
     </div>
   </header>
 
-  <main>
-    <div class="container page-head">
-      <h1>Pay your monthly fee</h1>
-      <p>Enter the phone number registered with Haritha Karma Sena. We'll find your latest unpaid bill.</p>
-    </div>
+  <main class="container">
+    <div data-auth-content>
+      <div class="page-head">
+        <h1>Pay your monthly fee</h1>
+        <p>Your registered phone is filled in automatically. Select an unpaid invoice and choose how you want to pay.</p>
+      </div>
 
-    <div class="container">
       <div class="panel">
         <form id="lookupForm">
           <div class="form-grid">
             <div class="full">
               <label for="phoneInput">Registered phone number</label>
-              <input id="phoneInput" name="phone" type="tel" inputmode="numeric" placeholder="e.g. 9000000001" required autocomplete="tel" />
+              <input id="phoneInput" name="phone" type="tel" inputmode="numeric" placeholder="e.g. 9999999999" required autocomplete="tel" />
             </div>
           </div>
           <div class="form-actions">
@@ -66,18 +68,16 @@
         </div>
 
         <div class="tabs" role="tablist">
-          <button class="tab active" data-method="razorpay" type="button">Razorpay</button>
-          <button class="tab" data-method="upi" type="button">Manual UPI</button>
+          <button class="tab" data-method="razorpay" type="button" disabled title="Not configured in demo mode">Razorpay · demo off</button>
+          <button class="tab active" data-method="upi" type="button">Manual UPI</button>
           <button class="tab" data-method="cash" type="button">Cash</button>
         </div>
 
-        <div id="razorpayPane">
-          <p class="muted">Pay securely with card, UPI or netbanking. Your order is created on the server and verified before a receipt is issued.</p>
-          <button class="btn btn-primary" id="payWithRazorpay" type="button">Pay with Razorpay</button>
-          <div id="razorpayMsg" class="notice hidden"></div>
+        <div id="razorpayPane" class="hidden">
+          <p class="notice info">Online card checkout is not configured in this demo. Use Manual UPI or cash recorded by an HKS admin.</p>
         </div>
 
-        <div id="upiPane" class="hidden">
+        <div id="upiPane">
           <div class="qr-box">
             <img id="upiQr" alt="UPI payment QR code" />
             <div>
@@ -102,8 +102,8 @@
         </div>
 
         <div id="cashPane" class="hidden">
-          <p class="notice info">Cash payments are recorded by a Haritha Karma Sena collector or admin. Please hand the exact amount to a verified volunteer and ask for a receipt.</p>
-          <p class="muted small">Admins can record cash payments from the <a href="/admin.html">admin panel</a>.</p>
+          <p class="notice info">Cash payments are recorded by a Haritha Karma Sena collector or admin. Hand the exact amount to a verified volunteer and ask for a receipt.</p>
+          <p class="muted small">Admins can record cash payments from the <a href="/admin.html">admin / HKS console</a>.</p>
         </div>
 
         <div class="panel hidden" id="resultPanel" style="margin-top:22px;background:var(--cream)">
@@ -113,11 +113,12 @@
     </div>
   </main>
 
-  <footer class="site-footer">
+  <footer class="site-footer no-print">
     <div class="container">
-      <span>© Haritha Karma Sena · Billing &amp; payments</span>
+      <span>© <span id="year">2026</span> Haritha Karma Sena · Billing &amp; payments</span>
       <a href="/history.html" style="color:inherit">View payment history →</a>
     </div>
   </footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

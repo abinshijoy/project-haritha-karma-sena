@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../models/prisma.js';
 import { hashToken } from '../utils/crypto.js';
 import { AppError } from '../utils/errors.js';
+import { config } from '../config/env.js';
 
 export async function requireAuth(req, _res, next) {
   try {
@@ -9,7 +10,7 @@ export async function requireAuth(req, _res, next) {
     const token = header.startsWith('Bearer ') ? header.slice(7) : null;
     if (!token) throw new AppError('Missing bearer token', 401);
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, config.jwtSecret);
 
     const tokenHash = hashToken(token);
     const session = await prisma.authSession.findUnique({

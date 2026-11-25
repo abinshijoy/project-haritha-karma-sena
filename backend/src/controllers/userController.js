@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { prisma } from '../models/prisma.js';
 import { AppError } from '../utils/errors.js';
+import { pagination } from '../utils/query.js';
 
 const createUserSchema = z.object({
   name: z.string().min(1).max(100),
@@ -27,8 +28,7 @@ function safeUser(user) {
 
 export async function listUsers(req, res, next) {
   try {
-    const take = Math.min(Number(req.query.limit) || 50, 100);
-    const skip = Math.max(Number(req.query.offset) || 0, 0);
+    const { take, skip } = pagination(req.query);
     const role = req.query.role;
     const where = {};
     if (role === 'RESIDENT' || role === 'ADMIN') where.role = role;

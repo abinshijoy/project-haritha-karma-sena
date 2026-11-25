@@ -3,128 +3,146 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Haritha Karma Sena · Rewards</title>
+  <meta name="description" content="Green Points wallet and rewards store for Haritha Karma Sena members.">
+  <title>Green Points &amp; rewards — Haritha Karma Sena</title>
+  <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/rewards.css">
+  <script src="/shared.js" defer></script>
+  <script src="/rewards-app.js" defer></script>
 </head>
-<body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark">🌿</span>
-      <span>Haritha Karma Sena</span>
+<body class="rewards-page" data-auth="member">
+  <header class="site-header rewards-header no-print">
+    <div class="container nav">
+      <a class="brand" href="/index.html">
+        <span class="brand-mark">♻</span>
+        <span>Haritha Karma Sena<small>Green Points</small></span>
+      </a>
+      <nav class="nav-links">
+        <a href="/index.html">Home</a>
+        <a href="/pay.html">Pay now</a>
+        <a href="/history.html">History</a>
+        <a href="/admin.html">Admin / HKS</a>
+        <a class="active" href="/rewards.html">Rewards</a>
+        <span data-session-slot></span>
+      </nav>
     </div>
-    <nav class="topnav" aria-label="Main navigation">
-      <a href="/index.html">← Billing</a>
-      <a href="#wallet">Wallet</a>
-      <a href="#rewards" class="active">Rewards</a>
-    </nav>
-    <label class="user-picker">
-      <span>User ID</span>
-      <input id="userId" type="text" value="member-5" autocomplete="off">
-    </label>
   </header>
 
-  <main>
-    <section id="wallet" class="view">
-      <div class="section-heading">
-        <h1>Green Points Wallet</h1>
-        <p>Your eco-impact, tracked.</p>
-      </div>
+  <main class="container rewards-main">
+    <div data-auth-content>
+      <section id="wallet" class="view">
+        <div class="section-heading">
+          <div class="eyebrow">Your impact, tracked</div>
+          <h1>Green Points Wallet</h1>
+          <p id="walletOwner">Member</p>
+        </div>
 
-      <div id="walletLoading" class="state-card">Loading your wallet…</div>
+        <div id="walletLoading" class="state-card">Loading your wallet…</div>
 
-      <div id="walletContent" hidden>
-        <article class="card summary-card">
-          <div class="summary-top">
-            <div>
-              <p class="eyebrow">Available balance</p>
-              <div class="balance"><span id="balance">0</span> <small>pts</small></div>
+        <div id="walletContent" hidden>
+          <article class="card summary-card">
+            <div class="summary-top">
+              <div>
+                <p class="eyebrow">Available balance</p>
+                <div class="balance"><span id="balance">0</span> <small>pts</small></div>
+              </div>
+              <span id="tierBadge" class="badge tier">Eco Starter</span>
             </div>
-            <span id="tierBadge" class="badge tier">Eco Starter</span>
-          </div>
-          <div class="progress-block">
-            <div class="progress-label">
-              <span id="progressFrom">Eco Starter</span>
-              <span id="progressTo">Green Guardian</span>
+            <div class="progress-block">
+              <div class="progress-label">
+                <span id="progressFrom">Eco Starter</span>
+                <span id="progressTo">Green Guardian</span>
+              </div>
+              <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+              <p id="progressHint" class="hint"></p>
             </div>
-            <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
-            <p id="progressHint" class="hint"></p>
+          </article>
+
+          <div class="grid grid-3">
+            <article class="card">
+              <div class="eyebrow">Earn</div>
+              <h2>How to earn</h2>
+              <ul class="earn-list">
+                <li><span class="earn-icon">₹</span><div><strong>+50 pts</strong><span>for paying the ₹50 monthly HKS bill</span></div></li>
+                <li><span class="earn-icon">♻</span><div><strong>+20 pts</strong><span>for verified clean segregation</span></div></li>
+              </ul>
+            </article>
+
+            <article class="card demo-card">
+              <div class="eyebrow">Try it</div>
+              <h2>Demo actions</h2>
+              <p class="demo-note">Each click awards points to your signed-in account — the same wallet used everywhere.</p>
+              <div class="demo-actions">
+                <button id="demoPayment" class="btn primary" type="button">Pay bill · +50 pts</button>
+                <button id="demoSegregation" class="btn ghost" type="button">Segregation · +20 pts</button>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="eyebrow">Sync</div>
+              <h2>Always up to date</h2>
+              <p class="muted">When an admin verifies your payment or a field worker logs a collection, the points appear here automatically. Redeeming a voucher creates a coupon code instantly.</p>
+            </article>
           </div>
-        </article>
 
-        <article class="card">
-          <h2>How to Earn</h2>
-          <ul class="earn-list">
-            <li><span class="earn-icon">₹</span><div><strong>+50 pts</strong><span>for paying the ₹50 monthly HKS bill on time</span></div></li>
-            <li><span class="earn-icon">♻️</span><div><strong>+20 pts</strong><span>for clean waste segregation</span></div></li>
-          </ul>
-        </article>
-
-        <article class="card demo-card">
-          <h2>Demo actions</h2>
-          <p class="demo-note">Try the earning flow below. Each click awards points to the User ID in the header.</p>
-          <div class="demo-actions">
-            <button id="demoPayment" class="btn primary" type="button">Pay ₹50 bill · +50 pts</button>
-            <button id="demoSegregation" class="btn ghost" type="button">Verify segregation · +20 pts</button>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card-title-row">
-            <h2>History</h2>
-            <div class="filters" role="group" aria-label="Filter transactions">
-              <button class="filter active" data-filter="ALL">All</button>
-              <button class="filter" data-filter="EARN">Earned</button>
-              <button class="filter" data-filter="REDEEM">Redeemed</button>
+          <article class="card">
+            <div class="card-title-row">
+              <h2>History</h2>
+              <div class="filters" role="group" aria-label="Filter transactions">
+                <button class="filter active" data-filter="ALL" type="button">All</button>
+                <button class="filter" data-filter="EARN" type="button">Earned</button>
+                <button class="filter" data-filter="REDEEM" type="button">Redeemed</button>
+              </div>
             </div>
-          </div>
-          <div id="transactionList" class="list"></div>
-        </article>
-      </div>
-    </section>
+            <div id="transactionList" class="list"></div>
+          </article>
+        </div>
+      </section>
 
-    <section id="rewards" class="view">
-      <div class="section-heading">
-        <h1>Rewards Store</h1>
-        <p>Turn your green points into real benefits.</p>
-      </div>
+      <section id="rewards" class="view">
+        <div class="section-heading">
+          <div class="eyebrow">Spend your points</div>
+          <h1>Rewards Store</h1>
+          <p>Turn your green points into real benefits for you and your community.</p>
+        </div>
 
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-tab="redeem" role="tab">Redeem Rewards</button>
-        <button class="tab" data-tab="coupons" role="tab">My Active Coupons</button>
-      </div>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="redeem" role="tab" type="button">Redeem rewards</button>
+          <button class="tab" data-tab="coupons" role="tab" type="button">My coupons</button>
+        </div>
 
-      <div id="storeLoading" class="state-card">Loading rewards…</div>
+        <div id="storeLoading" class="state-card">Loading rewards…</div>
 
-      <div id="redeemPanel" class="tab-panel">
-        <div id="voucherGrid" class="grid"></div>
-      </div>
+        <div id="redeemPanel">
+          <div id="voucherGrid" class="rewards-grid"></div>
+        </div>
 
-      <div id="couponPanel" class="tab-panel" hidden>
-        <div id="couponList" class="list"></div>
-      </div>
-    </section>
+        <div id="couponPanel" hidden>
+          <div id="couponList" class="list"></div>
+        </div>
+      </section>
+    </div>
   </main>
 
-  <nav class="bottombar" aria-label="Quick navigation">
-    <a href="/index.html"><span>🏠</span>Billing</a>
-    <a href="#rewards" class="active"><span>🎁</span>Rewards</a>
+  <nav class="bottombar no-print" aria-label="Quick navigation">
+    <a href="/index.html"><span>🏠</span>Home</a>
+    <a href="/pay.html"><span>₹</span>Pay</a>
     <a href="#wallet"><span>📈</span>Wallet</a>
+    <a href="#rewards" class="active"><span>🎁</span>Rewards</a>
   </nav>
 
   <div id="modalBackdrop" class="modal-backdrop" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <button id="modalClose" class="modal-close" aria-label="Close">×</button>
+      <button id="modalClose" class="modal-close" aria-label="Close" type="button">×</button>
       <h2 id="modalTitle">Confirm redemption</h2>
       <div id="modalBody"></div>
       <div class="modal-actions">
-        <button id="modalCancel" class="btn ghost">Cancel</button>
-        <button id="modalConfirm" class="btn primary">Confirm</button>
+        <button id="modalCancel" class="btn ghost" type="button">Cancel</button>
+        <button id="modalConfirm" class="btn primary" type="button">Confirm</button>
       </div>
     </div>
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-
-  <script src="/rewards-app.js"></script>
 </body>
 </html>

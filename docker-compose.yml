@@ -11,6 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - hks_pgdata:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d hks_billing"]
       interval: 5s

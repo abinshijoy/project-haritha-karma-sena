@@ -1,6 +1,6 @@
 # GitHub Setup, Push, and PR Management
 
-This environment currently does **not** have `git` or GitHub CLI (`gh`) installed, so the repo cannot be pushed from here automatically. Use this guide on a machine with Git/GitHub access.
+The repository already has a working Git remote (`git@github.com:abinshijoy/project-haritha-karma-sena.git`). Use a feature branch and open a pull request — do not push directly to `main`. The GitHub CLI (`gh`) is optional; the web UI works too.
 
 ## 1. Create the GitHub repository
 
